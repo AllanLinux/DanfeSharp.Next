@@ -70,7 +70,7 @@ namespace DanfeSharp.NFSe
             {
                 var m = ViewModel;
 
-                // Borda da página.
+                // Borda da página: 1 ponto (NT 008, item 2.2.3).
                 _Gfx.SetLineWidth(1);
                 _Gfx.DrawRectangle(1.8F, 1.8F, 206.4F, 293.5F);
                 _Gfx.Stroke();
@@ -79,18 +79,20 @@ namespace DanfeSharp.NFSe
                 float y = DesenharIdentificacao();
 
                 y = QuadroPrestador(y);
-                y = QuadroParticipante(y, "TOMADOR / ADQUIRENTE", m.Tomador);
-                y = QuadroParticipante(y, "DESTINATÁRIO DA OPERAÇÃO", m.Destinatario);
-                y = QuadroParticipante(y, "INTERMEDIÁRIO DA OPERAÇÃO", m.Intermediario);
+                y = QuadroParticipante(y, "TOMADOR / ADQUIRENTE", m.Tomador, "TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e");
+                y = QuadroParticipante(y, "DESTINATÁRIO DA OPERAÇÃO", m.Destinatario, "DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e");
+                y = QuadroParticipante(y, "INTERMEDIÁRIO DA OPERAÇÃO", m.Intermediario, "INTERMEDIÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e");
                 y = QuadroServico(y);
-                y = QuadroTributacaoMunicipal(y);
+                y = m.ExibirTributacaoMunicipal ? QuadroTributacaoMunicipal(y) : Aviso(y, "TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN");
                 y = QuadroTributacaoFederal(y);
                 y = QuadroIbsCbs(y);
                 y = QuadroValorTotal(y);
                 QuadroInformacoesComplementares(y);
                 DesenharCanhoto();
 
-                if (m.IsHomologacao) DesenharAvisoHomologacao();
+                // Marcas d'água de cancelamento e substituição (NT 008, itens 2.5.1 e 2.5.2).
+                if (m.Cancelada) DesenharMarcaDagua("CANCELADA");
+                else if (m.Substituida) DesenharMarcaDagua("SUBSTITUÍDA");
 
                 if (ExibirAssinatura)
                     _Gfx.DrawString(TextoAssinatura, new RectangleF(Esquerda, 289.5F, Direita - Esquerda, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
@@ -106,13 +108,30 @@ namespace DanfeSharp.NFSe
         {
             var m = ViewModel;
 
+            // Cabeçalho com fundo cinza claro (NT 008, item 2.2.3).
+            Sombrear(new RectangleF(Esquerda, 2F, Direita - Esquerda, 12F));
+
             if (Logo != null)
                 _Gfx.ShowXObject(Logo, new RectangleF(4.2F, 3.6F, 40.8F, 8.1F));
 
-            Centralizado("DANFSe v2.0", 7.3F, _Titulo);
-            Centralizado("Documento Auxiliar da NFS-e", 11F, _Titulo);
+            if (m.IsHomologacao)
+            {
+                // Em homologação, "NFS-e SEM VALIDADE JURÍDICA" em vermelho, abaixo do título (NT 008, item 2.4.3).
+                Centralizado("DANFSe v2.0", 6F, _Titulo);
+                Centralizado("Documento Auxiliar da NFS-e", 9.3F, _Titulo);
+                _Gfx.BeginLocalState();
+                _Gfx.SetFillColor(1, 0, 0);
+                Centralizado("NFS-e SEM VALIDADE JURÍDICA", 12.6F, _Titulo);
+                _Gfx.EndLocalState();
+            }
+            else
+            {
+                Centralizado("DANFSe v2.0", 7.3F, _Titulo);
+                Centralizado("Documento Auxiliar da NFS-e", 11F, _Titulo);
+            }
 
-            Texto($"Município: {m.MunicipioEmissor ?? "-"}", ColunaX(3), 6.6F, _Municipio, LarguraColuna - Recuo);
+            if (m.ExibirMunicipioEmissor)
+                Texto($"Município: {m.MunicipioEmissor ?? "-"}", ColunaX(3), 6.6F, _Municipio, LarguraColuna - Recuo);
             Texto($"Ambiente Gerador: {m.AmbienteGerador}", ColunaX(3), 9.2F, _Pequena);
             Texto($"Tipo de Ambiente: {m.TipoAmbiente}", ColunaX(3), 11.5F, _Pequena);
 
@@ -133,9 +152,10 @@ namespace DanfeSharp.NFSe
             Campo(1, 1, 32.3F, "SÉRIE DA DPS", m.SerieDps, _RotuloIdentificacao, 2.8F);
             Campo(2, 1, 32.3F, "DATA E HORA DA EMISSÃO DA DPS", m.DataHoraEmissaoDps.FormatarDataHora24(), _RotuloIdentificacao, 2.8F);
 
+            Sombrear(new RectangleF(Esquerda, 37.1F, LarguraColuna, 7.1F));
             Campo(0, 1, 39.4F, "EMITENTE DA NFS-e", m.Emitente, _RotuloIdentificacao, 2.8F);
-            Campo(1, 1, 39.4F, "SITUAÇÃO DA NFS-e", m.Situacao, _RotuloIdentificacao, 2.8F);
-            Campo(2, 1, 39.4F, "FINALIDADE", m.Finalidade, _RotuloIdentificacao, 2.8F);
+            Campo(1, 1, 39.4F, "SITUAÇÃO DA NFS-e", DanfseViewModelCreator.Limitar(m.Situacao, 37), _RotuloIdentificacao, 2.8F);
+            Campo(2, 1, 39.4F, "FINALIDADE", DanfseViewModelCreator.Limitar(m.Finalidade, 37), _RotuloIdentificacao, 2.8F);
 
             if (!String.IsNullOrWhiteSpace(m.QrCode))
             {
@@ -172,21 +192,27 @@ namespace DanfeSharp.NFSe
             return FecharQuadro(r, extra);
         }
 
-        private float QuadroParticipante(float y, String titulo, ParticipanteNfseViewModel p)
+        private float QuadroParticipante(float y, String titulo, ParticipanteNfseViewModel p, String naoIdentificado)
         {
-            if (p == null)
-            {
-                Centralizado($"{titulo} NÃO IDENTIFICADO NA NFS-e", y + 2.3F, _Rotulo);
-                float fim = y + 2.95F;
-                LinhaHorizontal(fim);
-                return fim;
-            }
+            if (p == null) return Aviso(y, naoIdentificado);
 
             TituloQuadro(titulo, y);
             float r = DadosParticipante(p, y + RotuloAposLinha);
 
             // r é o rótulo de uma próxima linha; o quadro fecha abaixo dos valores da última linha escrita.
             return FecharQuadroNoValor(r - EntreLinhas + ValorAposRotulo);
+        }
+
+        /// <summary>
+        /// Quadro reduzido a uma linha centralizada, como "TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e"
+        /// (NT 008, notas 2, 3 e 4).
+        /// </summary>
+        private float Aviso(float y, String texto)
+        {
+            Centralizado(texto, y + 2.3F, _Rotulo);
+            float fim = y + 2.95F;
+            LinhaHorizontal(fim);
+            return fim;
         }
 
         /// <summary>
@@ -228,11 +254,11 @@ namespace DanfeSharp.NFSe
 
             if (!String.IsNullOrWhiteSpace(m.DescricaoTributacaoNacional))
                 // A DANFSe oficial mostra só a primeira linha da descrição do código de tributação nacional.
-                ultima = Paragrafo(m.DescricaoTributacaoNacional, ColunaX(0), ultima + 4.3F, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 1);
+                ultima = Paragrafo(DanfseViewModelCreator.Limitar(m.DescricaoTributacaoNacional, 167), ColunaX(0), ultima + 4.3F, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 1);
 
             float rotulo = ultima + 4F;
             Texto("Descrição do Serviço", ColunaX(0), rotulo, _Rotulo);
-            ultima = Paragrafo(Valor(m.DescricaoServico), ColunaX(0), rotulo + ValorAposRotulo, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 12);
+            ultima = Paragrafo(Valor(DanfseViewModelCreator.Limitar(m.DescricaoServico, 1297)), ColunaX(0), rotulo + ValorAposRotulo, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 12);
 
             return FecharQuadroNoValor(ultima);
         }
@@ -247,7 +273,17 @@ namespace DanfeSharp.NFSe
                 Campo(1, 1, r, "Tipo de Tributação do ISSQN", m.TipoTributacaoIssqn),
                 Campo(2, 2, r, "Município / Sigla UF / País de Incidência do ISSQN", m.MunicipioIncidenciaIssqn));
 
-            // Linha exibida pela DANFSe oficial só quando a nota tem benefício municipal ou deduções.
+            // Linhas exibidas só quando a nota informa algum dos campos (NT 008, nota 5).
+            if (m.ExibirRegimeEspecial)
+            {
+                r += EntreLinhas + extra;
+                extra = Maior(
+                    Campo(0, 1, r, "Regime Especial de Tributação do ISSQN", m.RegimeEspecialTributacao),
+                    Campo(1, 1, r, "Tipo de Imunidade do ISSQN", DanfseViewModelCreator.Limitar(m.TipoImunidade, 37)),
+                    Campo(2, 1, r, "Suspensão da Exigibilidade do ISSQN", DanfseViewModelCreator.Limitar(m.SuspensaoExigibilidade, 37)),
+                    Campo(3, 1, r, "Número Processo Suspensão", m.NumeroProcessoSuspensao));
+            }
+
             if (m.ExibirBeneficioMunicipal)
             {
                 r += EntreLinhas + extra;
@@ -279,11 +315,14 @@ namespace DanfeSharp.NFSe
                 Campo(2, 1, r, "Contribuição Previdenciária - Retida", Moeda(m.ContribuicaoPrevidenciariaRetida)),
                 Campo(3, 1, r, "Contribuições Sociais - Retidas", Moeda(m.ContribuicoesSociaisRetidas)));
 
-            r += EntreLinhas + extra;
-            extra = Maior(
-                Campo(0, 1, r, "PIS - Débito Apuração Própria", Moeda(m.Pis)),
-                Campo(1, 1, r, "COFINS - Débito Apuração Própria", Moeda(m.Cofins)),
-                Campo(2, 2, r, "Descrição Contrib. Sociais - Retidas", m.DescricaoContribuicoesSociaisRetidas));
+            if (m.ExibirPisCofins)
+            {
+                r += EntreLinhas + extra;
+                extra = Maior(
+                    Campo(0, 1, r, "PIS - Débito Apuração Própria", Moeda(m.Pis)),
+                    Campo(1, 1, r, "COFINS - Débito Apuração Própria", Moeda(m.Cofins)),
+                    Campo(2, 2, r, "Descrição Contrib. Sociais - Retidas", m.DescricaoContribuicoesSociaisRetidas));
+            }
 
             return FecharQuadro(r, extra);
         }
@@ -335,6 +374,7 @@ namespace DanfeSharp.NFSe
                 Campo(3, 1, r, "Desconto Condicionado", Moeda(m.DescontoCondicionado)));
 
             r += EntreLinhas + extra;
+            Sombrear(new RectangleF(Esquerda + 3 * LarguraColuna, r - 2F, LarguraColuna, EntreLinhas));
             extra = Maior(
                 Campo(0, 1, r, "Total das Retenções (ISSQN / Federais)", Moeda(m.TotalRetencoes)),
                 Campo(1, 1, r, "VALOR LÍQUIDO DA NFS-e", Moeda(m.ValorLiquido)),
@@ -371,16 +411,19 @@ namespace DanfeSharp.NFSe
             Texto($"{Valor(m.Numero)} / {Valor(m.ChaveAcesso)}", Esquerda + 2 * LarguraColuna + 1.6F, 285.6F, _Valor, 2 * LarguraColuna - 3.2F);
         }
 
-        private void DesenharAvisoHomologacao()
+        /// <summary>
+        /// Marca d'água na diagonal, em cinza (K35), com no mínimo 50 pontos (NT 008, itens 2.5.1 e 2.5.2).
+        /// </summary>
+        private void DesenharMarcaDagua(String texto)
         {
-            var area = new RectangleF(Esquerda, 100F, Direita - Esquerda, 100F);
-            var ts = new TextStack(area) { AlinhamentoVertical = AlinhamentoVertical.Centro, AlinhamentoHorizontal = AlinhamentoHorizontal.Centro, LineHeightScale = 0.9F }
-                .AddLine("SEM VALOR FISCAL", new Fonte(FonteRegular, 48))
-                .AddLine("AMBIENTE DE HOMOLOGAÇÃO", new Fonte(FonteRegular, 30));
+            var fonte = new Fonte(FonteNegrito, 80);
+            var centro = new PointF(Constantes.A4Largura / 2F, Constantes.A4Altura / 2F);
 
             _Gfx.BeginLocalState();
-            _Gfx.SetFillColor(0.35, 0.35, 0.35);
-            ts.Draw(_Gfx);
+            _Gfx.RotacionarEm(-(float)(Math.Atan2(Constantes.A4Altura, Constantes.A4Largura) * 180 / Math.PI), centro);
+            _Gfx.SetFillColor(0.65, 0.65, 0.65);
+            float largura = fonte.MedirLarguraTexto(texto);
+            _Gfx.ShowText(texto, new PointF(centro.X - largura / 2F, centro.Y - fonte.AlturaLinha / 2F), fonte);
             _Gfx.EndLocalState();
         }
 
@@ -390,7 +433,26 @@ namespace DanfeSharp.NFSe
 
         private static float ColunaX(int coluna) => Esquerda + coluna * LarguraColuna + Recuo;
 
-        private void TituloQuadro(String titulo, float y) => Texto(titulo, ColunaX(0), y + 2.4F, _TituloQuadro, LarguraColuna - 2 * Recuo);
+        private void TituloQuadro(String titulo, float y)
+        {
+            // Títulos dos blocos com fundo cinza claro (NT 008, item 2.2.3). A linha do bloco é redesenhada por cima do
+            // fundo, como na DANFSe oficial; senão, ao rasterizar, o fundo cobre metade da linha e ela parece mais fina.
+            Sombrear(new RectangleF(Esquerda, y + 0.1F, LarguraColuna, EntreLinhas));
+            LinhaHorizontal(y);
+            Texto(titulo, ColunaX(0), y + 2.4F, _TituloQuadro, LarguraColuna - 2 * Recuo);
+        }
+
+        /// <summary>
+        /// Fundo cinza claro (5%) do cabeçalho, dos títulos dos blocos e dos campos de destaque.
+        /// </summary>
+        private void Sombrear(RectangleF area)
+        {
+            _Gfx.BeginLocalState();
+            _Gfx.SetFillColor(0.95, 0.95, 0.95);
+            _Gfx.DrawRectangle(area);
+            _Gfx.Fill();
+            _Gfx.EndLocalState();
+        }
 
         /// <summary>
         /// Fecha o quadro abaixo da última linha de campos, cujo rótulo está em <paramref name="ultimoRotulo"/>;
