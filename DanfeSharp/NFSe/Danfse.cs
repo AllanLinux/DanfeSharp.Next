@@ -92,7 +92,8 @@ namespace DanfeSharp.NFSe
 
                 if (m.IsHomologacao) DesenharAvisoHomologacao();
 
-                _Gfx.DrawString("Impresso com DanfeSharp", new RectangleF(Esquerda, 289.5F, Direita - Esquerda, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
+                if (ExibirAssinatura)
+                    _Gfx.DrawString(TextoAssinatura, new RectangleF(Esquerda, 289.5F, Direita - Esquerda, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
             }
 
             _Gfx = null;
@@ -162,14 +163,13 @@ namespace DanfeSharp.NFSe
             var p = ViewModel.Prestador ?? new ParticipanteNfseViewModel();
             TituloQuadro("PRESTADOR / FORNECEDOR", y);
 
-            float r = y + RotuloAposLinha;
-            DadosParticipante(p, r);
+            float r = DadosParticipante(p, y + RotuloAposLinha);
 
-            r += 3 * EntreLinhas;
-            Campo(0, 1, r, "Simples Nacional na Data de Competência", p.SimplesNacional);
-            Campo(1, 3, r, "Regime de Apuração Tributária pelo SN", p.RegimeApuracaoSimplesNacional);
+            float extra = Maior(
+                Campo(0, 1, r, "Simples Nacional na Data de Competência", p.SimplesNacional),
+                Campo(1, 3, r, "Regime de Apuração Tributária pelo SN", p.RegimeApuracaoSimplesNacional));
 
-            return FecharQuadro(r);
+            return FecharQuadro(r, extra);
         }
 
         private float QuadroParticipante(float y, String titulo, ParticipanteNfseViewModel p)
@@ -183,26 +183,34 @@ namespace DanfeSharp.NFSe
             }
 
             TituloQuadro(titulo, y);
-            float r = y + RotuloAposLinha;
-            DadosParticipante(p, r);
+            float r = DadosParticipante(p, y + RotuloAposLinha);
 
-            return FecharQuadro(r + 2 * EntreLinhas);
+            // r é o rótulo de uma próxima linha; o quadro fecha abaixo dos valores da última linha escrita.
+            return FecharQuadroNoValor(r - EntreLinhas + ValorAposRotulo);
         }
 
-        private void DadosParticipante(ParticipanteNfseViewModel p, float r)
+        /// <summary>
+        /// Escreve as três linhas de dados do participante e retorna a posição do rótulo da linha seguinte.
+        /// </summary>
+        private float DadosParticipante(ParticipanteNfseViewModel p, float r)
         {
-            Campo(1, 1, r, "CNPJ / CPF / NIF", p.Documento);
-            Campo(2, 1, r, "Indicador Municipal (Inscrição)", p.InscricaoMunicipal);
-            Campo(3, 1, r, "Telefone", p.Telefone);
+            float extra = Maior(
+                Campo(1, 1, r, "CNPJ / CPF / NIF", p.Documento),
+                Campo(2, 1, r, "Indicador Municipal (Inscrição)", p.InscricaoMunicipal),
+                Campo(3, 1, r, "Telefone", p.Telefone));
 
-            r += EntreLinhas;
-            Campo(0, 2, r, "Nome / Nome Empresarial", p.Nome);
-            Campo(2, 1, r, "Município / Sigla UF", p.Municipio);
-            Campo(3, 1, r, "Código IBGE / CEP", p.CodigoIbgeCep);
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 2, r, "Nome / Nome Empresarial", p.Nome),
+                Campo(2, 1, r, "Município / Sigla UF", p.Municipio),
+                Campo(3, 1, r, "Código IBGE / CEP", p.CodigoIbgeCep));
 
-            r += EntreLinhas;
-            Campo(0, 2, r, "Endereço", p.Endereco);
-            Campo(2, 2, r, "E-mail", p.Email);
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 2, r, "Endereço", p.Endereco),
+                Campo(2, 2, r, "E-mail", p.Email));
+
+            return r + EntreLinhas + extra;
         }
 
         private float QuadroServico(float y)
@@ -211,14 +219,16 @@ namespace DanfeSharp.NFSe
             TituloQuadro("SERVIÇO PRESTADO", y);
 
             float r = y + RotuloAposLinha;
-            Campo(1, 1, r, "Código de Tributação Nacional/Municipal", m.CodigoTributacao);
-            Campo(2, 1, r, "Código da NBS", m.CodigoNbs);
-            Campo(3, 1, r, "Local da Prestação / Sigla UF / País", m.LocalPrestacao);
+            float extra = Maior(
+                Campo(1, 1, r, "Código de Tributação Nacional/Municipal", m.CodigoTributacao),
+                Campo(2, 1, r, "Código da NBS", m.CodigoNbs),
+                Campo(3, 1, r, "Local da Prestação / Sigla UF / País", m.LocalPrestacao));
 
-            float ultima = r + ValorAposRotulo;
+            float ultima = r + ValorAposRotulo + extra;
 
             if (!String.IsNullOrWhiteSpace(m.DescricaoTributacaoNacional))
-                ultima = Paragrafo(m.DescricaoTributacaoNacional, ColunaX(0), ultima + 4.3F, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 3);
+                // A DANFSe oficial mostra só a primeira linha da descrição do código de tributação nacional.
+                ultima = Paragrafo(m.DescricaoTributacaoNacional, ColunaX(0), ultima + 4.3F, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, 1);
 
             float rotulo = ultima + 4F;
             Texto("Descrição do Serviço", ColunaX(0), rotulo, _Rotulo);
@@ -233,16 +243,29 @@ namespace DanfeSharp.NFSe
             TituloQuadro("TRIBUTAÇÃO MUNICIPAL (ISSQN)", y);
 
             float r = y + RotuloAposLinha;
-            Campo(1, 1, r, "Tipo de Tributação do ISSQN", m.TipoTributacaoIssqn);
-            Campo(2, 2, r, "Município / Sigla UF / País de Incidência do ISSQN", m.MunicipioIncidenciaIssqn);
+            float extra = Maior(
+                Campo(1, 1, r, "Tipo de Tributação do ISSQN", m.TipoTributacaoIssqn),
+                Campo(2, 2, r, "Município / Sigla UF / País de Incidência do ISSQN", m.MunicipioIncidenciaIssqn));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "BC ISSQN", Moeda(m.BaseCalculoIssqn));
-            Campo(1, 1, r, "Alíquota Aplicada", Percentual(m.AliquotaIssqn));
-            Campo(2, 1, r, "Retenção do ISSQN", m.RetencaoIssqn);
-            Campo(3, 1, r, "ISSQN Apurado", Moeda(m.ValorIssqn));
+            // Linha exibida pela DANFSe oficial só quando a nota tem benefício municipal ou deduções.
+            if (m.ExibirBeneficioMunicipal)
+            {
+                r += EntreLinhas + extra;
+                extra = Maior(
+                    Campo(0, 1, r, "Benefício Municipal", m.BeneficioMunicipal),
+                    Campo(1, 1, r, "Cálculo do BM", Moeda(m.CalculoBeneficioMunicipal)),
+                    Campo(2, 1, r, "Total Deduções/Reduções", Moeda(m.TotalDeducoesReducoes)),
+                    Campo(3, 1, r, "Desconto Incondicionado", Moeda(m.DescontoIncondicionado)));
+            }
 
-            return FecharQuadro(r);
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "BC ISSQN", Moeda(m.BaseCalculoIssqn)),
+                Campo(1, 1, r, "Alíquota Aplicada", Percentual(m.AliquotaIssqn)),
+                Campo(2, 1, r, "Retenção do ISSQN", m.RetencaoIssqn),
+                Campo(3, 1, r, "ISSQN Apurado", Moeda(m.ValorIssqn)));
+
+            return FecharQuadro(r, extra);
         }
 
         private float QuadroTributacaoFederal(float y)
@@ -251,16 +274,18 @@ namespace DanfeSharp.NFSe
             TituloQuadro("TRIBUTAÇÃO FEDERAL (EXCETO CBS)", y);
 
             float r = y + RotuloAposLinha;
-            Campo(1, 1, r, "IRRF", Moeda(m.Irrf));
-            Campo(2, 1, r, "Contribuição Previdenciária - Retida", Moeda(m.ContribuicaoPrevidenciariaRetida));
-            Campo(3, 1, r, "Contribuições Sociais - Retidas", Moeda(m.ContribuicoesSociaisRetidas));
+            float extra = Maior(
+                Campo(1, 1, r, "IRRF", Moeda(m.Irrf)),
+                Campo(2, 1, r, "Contribuição Previdenciária - Retida", Moeda(m.ContribuicaoPrevidenciariaRetida)),
+                Campo(3, 1, r, "Contribuições Sociais - Retidas", Moeda(m.ContribuicoesSociaisRetidas)));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "PIS - Débito Apuração Própria", Moeda(m.Pis));
-            Campo(1, 1, r, "COFINS - Débito Apuração Própria", Moeda(m.Cofins));
-            Campo(2, 2, r, "Descrição Contrib. Sociais - Retidas", m.DescricaoContribuicoesSociaisRetidas);
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "PIS - Débito Apuração Própria", Moeda(m.Pis)),
+                Campo(1, 1, r, "COFINS - Débito Apuração Própria", Moeda(m.Cofins)),
+                Campo(2, 2, r, "Descrição Contrib. Sociais - Retidas", m.DescricaoContribuicoesSociaisRetidas));
 
-            return FecharQuadro(r);
+            return FecharQuadro(r, extra);
         }
 
         private float QuadroIbsCbs(float y)
@@ -269,29 +294,33 @@ namespace DanfeSharp.NFSe
             TituloQuadro("TRIBUTAÇÃO IBS/CBS", y);
 
             float r = y + RotuloAposLinha;
-            Campo(1, 1, r, "CST / cClassTrib", m.CstClassificacaoTributaria);
-            Campo(2, 2, r, "Indicador de Operação / Código IBGE Incidência / Município Incidência / Sigla UF", m.IndicadorOperacaoIncidencia);
+            float extra = Maior(
+                Campo(1, 1, r, "CST / cClassTrib", m.CstClassificacaoTributaria),
+                Campo(2, 2, r, "Indicador de Operação / Código IBGE Incidência / Município Incidência / Sigla UF", m.IndicadorOperacaoIncidencia));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "Exclusões e Reduções da Base de Cálculo", Moeda(m.ExclusoesReducoesBaseCalculo));
-            Campo(1, 1, r, "Base de Cálculo Após Exclusões e Reduções", Moeda(m.BaseCalculoIbsCbs));
-            Campo(2, 1, r, "Red. Alíquota IBS / Red. Alíquota CBS",
-                $"{Percentual(m.ReducaoAliquotaIbsUf)} / {Percentual(m.ReducaoAliquotaIbsMunicipio)} / {Percentual(m.ReducaoAliquotaCbs)}");
-            Campo(3, 1, r, "Alíquota - IBS UF / IBS Mun", $"{Percentual(m.AliquotaIbsUf)} / {Percentual(m.AliquotaIbsMunicipio)}");
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "Exclusões e Reduções da Base de Cálculo", Moeda(m.ExclusoesReducoesBaseCalculo)),
+                Campo(1, 1, r, "Base de Cálculo Após Exclusões e Reduções", Moeda(m.BaseCalculoIbsCbs)),
+                Campo(2, 1, r, "Red. Alíquota IBS / Red. Alíquota CBS",
+                    $"{Percentual(m.ReducaoAliquotaIbsUf)} / {Percentual(m.ReducaoAliquotaIbsMunicipio)} / {Percentual(m.ReducaoAliquotaCbs)}"),
+                Campo(3, 1, r, "Alíquota - IBS UF / IBS Mun", $"{Percentual(m.AliquotaIbsUf)} / {Percentual(m.AliquotaIbsMunicipio)}"));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "Alíq. Efetiva Municipal - IBS", Percentual(m.AliquotaEfetivaIbsMunicipio));
-            Campo(1, 1, r, "Valor Apurado Municipal - IBS", Moeda(m.ValorIbsMunicipio));
-            Campo(2, 1, r, "Alíq. Efetiva Estadual - IBS", Percentual(m.AliquotaEfetivaIbsUf));
-            Campo(3, 1, r, "Valor Apurado Estadual - IBS", Moeda(m.ValorIbsUf));
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "Alíq. Efetiva Municipal - IBS", Percentual(m.AliquotaEfetivaIbsMunicipio)),
+                Campo(1, 1, r, "Valor Apurado Municipal - IBS", Moeda(m.ValorIbsMunicipio)),
+                Campo(2, 1, r, "Alíq. Efetiva Estadual - IBS", Percentual(m.AliquotaEfetivaIbsUf)),
+                Campo(3, 1, r, "Valor Apurado Estadual - IBS", Moeda(m.ValorIbsUf)));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "Valor Total Apurado - IBS", Moeda(m.ValorIbs));
-            Campo(1, 1, r, "Alíquota - CBS", Percentual(m.AliquotaCbs));
-            Campo(2, 1, r, "Alíquota Efetiva - CBS", Percentual(m.AliquotaEfetivaCbs));
-            Campo(3, 1, r, "Valor Total Apurado - CBS", Moeda(m.ValorCbs));
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "Valor Total Apurado - IBS", Moeda(m.ValorIbs)),
+                Campo(1, 1, r, "Alíquota - CBS", Percentual(m.AliquotaCbs)),
+                Campo(2, 1, r, "Alíquota Efetiva - CBS", Percentual(m.AliquotaEfetivaCbs)),
+                Campo(3, 1, r, "Valor Total Apurado - CBS", Moeda(m.ValorCbs)));
 
-            return FecharQuadro(r);
+            return FecharQuadro(r, extra);
         }
 
         private float QuadroValorTotal(float y)
@@ -300,17 +329,19 @@ namespace DanfeSharp.NFSe
             TituloQuadro("VALOR TOTAL DA NFS-e", y);
 
             float r = y + RotuloAposLinha;
-            Campo(1, 1, r, "VALOR DA OPERAÇÃO / SERVIÇO", Moeda(m.ValorServico));
-            Campo(2, 1, r, "Desconto Incondicionado", Moeda(m.DescontoIncondicionado));
-            Campo(3, 1, r, "Desconto Condicionado", Moeda(m.DescontoCondicionado));
+            float extra = Maior(
+                Campo(1, 1, r, "VALOR DA OPERAÇÃO / SERVIÇO", Moeda(m.ValorServico)),
+                Campo(2, 1, r, "Desconto Incondicionado", Moeda(m.DescontoIncondicionado)),
+                Campo(3, 1, r, "Desconto Condicionado", Moeda(m.DescontoCondicionado)));
 
-            r += EntreLinhas;
-            Campo(0, 1, r, "Total das Retenções (ISSQN / Federais)", Moeda(m.TotalRetencoes));
-            Campo(1, 1, r, "VALOR LÍQUIDO DA NFS-e", Moeda(m.ValorLiquido));
-            Campo(2, 1, r, "Total do IBS/CBS", Moeda(m.TotalIbsCbs));
-            Campo(3, 1, r, "VALOR LÍQUIDO DA NFS-e + IBS/CBS", Moeda(m.ValorLiquidoComIbsCbs));
+            r += EntreLinhas + extra;
+            extra = Maior(
+                Campo(0, 1, r, "Total das Retenções (ISSQN / Federais)", Moeda(m.TotalRetencoes)),
+                Campo(1, 1, r, "VALOR LÍQUIDO DA NFS-e", Moeda(m.ValorLiquido)),
+                Campo(2, 1, r, "Total do IBS/CBS", Moeda(m.TotalIbsCbs)),
+                Campo(3, 1, r, "VALOR LÍQUIDO DA NFS-e + IBS/CBS", Moeda(m.ValorLiquidoComIbsCbs)));
 
-            return FecharQuadro(r);
+            return FecharQuadro(r, extra);
         }
 
         private void QuadroInformacoesComplementares(float y)
@@ -362,9 +393,12 @@ namespace DanfeSharp.NFSe
         private void TituloQuadro(String titulo, float y) => Texto(titulo, ColunaX(0), y + 2.4F, _TituloQuadro, LarguraColuna - 2 * Recuo);
 
         /// <summary>
-        /// Fecha o quadro abaixo da última linha de campos, cujo rótulo está em <paramref name="ultimoRotulo"/>.
+        /// Fecha o quadro abaixo da última linha de campos, cujo rótulo está em <paramref name="ultimoRotulo"/>;
+        /// <paramref name="extra"/> é a altura das linhas a mais dos valores quebrados.
         /// </summary>
-        private float FecharQuadro(float ultimoRotulo) => FecharQuadroNoValor(ultimoRotulo + ValorAposRotulo);
+        private float FecharQuadro(float ultimoRotulo, float extra) => FecharQuadroNoValor(ultimoRotulo + ValorAposRotulo + extra);
+
+        private static float Maior(params float[] valores) => valores.Max();
 
         private float FecharQuadroNoValor(float ultimoValor)
         {
@@ -382,12 +416,16 @@ namespace DanfeSharp.NFSe
 
         /// <summary>
         /// Rótulo e valor de um campo que ocupa <paramref name="colunas"/> colunas a partir de <paramref name="coluna"/>.
+        /// Como na DANFSe oficial, o valor que não cabe na largura continua nas linhas de baixo (até 3 linhas).
+        /// Retorna a altura acrescentada pelas linhas a mais, para empurrar o restante do documento.
         /// </summary>
-        private void Campo(int coluna, int colunas, float baseRotulo, String rotulo, String valor, Fonte fonteRotulo = null, float distanciaValor = ValorAposRotulo)
+        private float Campo(int coluna, int colunas, float baseRotulo, String rotulo, String valor, Fonte fonteRotulo = null, float distanciaValor = ValorAposRotulo)
         {
             float largura = colunas * LarguraColuna - 2 * Recuo;
             Texto(rotulo, ColunaX(coluna), baseRotulo, fonteRotulo ?? _Rotulo, largura);
-            Texto(Valor(valor), ColunaX(coluna), baseRotulo + distanciaValor, _Valor, largura);
+
+            float primeira = baseRotulo + distanciaValor;
+            return Paragrafo(Valor(valor), ColunaX(coluna), primeira, largura, _Valor, LinhaTexto, 3) - primeira;
         }
 
         private void Centralizado(String texto, float baseLinha, Fonte fonte)

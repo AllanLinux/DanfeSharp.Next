@@ -170,6 +170,29 @@ namespace DanfeSharp.Test
         }
 
         [TestMethod]
+        public void BeneficioMunicipal() => Assert.AreEqual(1, Gerar(Ler("nfse_beneficio_municipal.xml"), "nfse_beneficio_municipal.pdf"));
+
+        [TestMethod]
+        public void BeneficioMunicipal_Modelo()
+        {
+            var m = Ler("nfse_beneficio_municipal.xml");
+
+            Assert.IsTrue(m.ExibirBeneficioMunicipal);
+            Assert.AreEqual("Alíquota diferenciada", m.BeneficioMunicipal);
+            Assert.IsNull(m.CalculoBeneficioMunicipal);
+            Assert.IsNull(m.TotalDeducoesReducoes);
+            Assert.AreEqual("3 - PIS/COFINS/CSLL Retidos", m.DescricaoContribuicoesSociaisRetidas);
+            StringAssert.EndsWith(m.Prestador.Endereco, "ANEXO DO PREDIO PRINCIPAL, CENTRO");
+        }
+
+        [TestMethod]
+        public void SemBeneficioMunicipal_NaoExibeALinha()
+        {
+            Assert.IsFalse(Ler("nfse_ibscbs.xml").ExibirBeneficioMunicipal);
+            Assert.IsFalse(Ler("nfse_imune.xml").ExibirBeneficioMunicipal);
+        }
+
+        [TestMethod]
         public void XmlDeOutroDocumento_Recusado()
         {
             Assert.ThrowsException<XmlException>(() => DanfseViewModelCreator.CriarDeArquivoXml(Path.Combine("Xml", "CTe", "cte_rodoviario.xml")));
