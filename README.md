@@ -368,17 +368,6 @@ A publicação é feita pelo workflow `.github/workflows/publicar.yml` a cada ta
 O workflow compila, roda os testes e publica no nuget.org (Trusted Publishing, sem API key guardada), no GitHub
 Packages e em uma Release. Um número de versão publicado no nuget.org não pode ser reutilizado.
 
-## Limitações
-
-- Os leiautes da NFC-e, dos eventos e do DACTE ainda não foram conferidos com notas reais. Valide com os seus
-  documentos antes de usar em produção.
-- Não há norma que defina o IBS e a CBS no DACTE nem na NFC-e. Os quadros atuais são provisórios.
-- A DANFSe foi conferida com duas DANFSe oficiais e os XMLs reais correspondentes (Rio de Janeiro e Recife, com mais de
-  97% das palavras na mesma posição). Algumas descrições de códigos só foram confirmadas para os valores encontrados
-  nessas notas: tipo de retenção do PIS/COFINS/CSLL 0 e 3 e benefício municipal 4. Os demais códigos aparecem apenas
-  com o número.
-- Ainda não são gerados: DAMDFE, NFC-e em A4 e DACTE OS (modelo 67).
-
 ## Licença
 
 MIT. Veja [LICENSE.txt](LICENSE.txt), que mantém o aviso de copyright do projeto original.
