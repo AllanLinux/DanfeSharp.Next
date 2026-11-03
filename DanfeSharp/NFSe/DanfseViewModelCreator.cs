@@ -207,6 +207,11 @@ namespace DanfeSharp.NFSe
             m.AliquotaIssqn = valores?.pAliqAplic ?? mun?.pAliq;
             m.ValorIssqn = valores?.vISSQN;
 
+            m.BeneficioMunicipal = valores?.tpBM == null ? null : Descricao(valores.tpBM, TiposBeneficioMunicipal);
+            m.CalculoBeneficioMunicipal = valores?.vCalcBM;
+            m.TotalDeducoesReducoes = valores?.vCalcDR ?? dps.valores?.vDedRed?.vDR;
+            m.ExibirBeneficioMunicipal = valores?.tpBM != null || mun?.BM != null || m.TotalDeducoesReducoes.HasValue;
+
             var fed = trib?.tribFed;
             m.Irrf = fed?.vRetIRRF;
             m.ContribuicaoPrevidenciariaRetida = fed?.vRetCP;
@@ -334,10 +339,17 @@ namespace DanfeSharp.NFSe
             { "1", "Não Retido" }, { "2", "Retido pelo Tomador" }, { "3", "Retido pelo Intermediário" },
         };
 
-        // Apenas o código 0 foi conferido em uma DANFSe oficial; os demais saem só com o código.
+        // Apenas os códigos conferidos em DANFSe oficiais têm descrição; os demais saem só com o código.
         private static readonly Dictionary<String, String> TiposRetencaoPisCofins = new Dictionary<String, String>
         {
             { "0", "PIS/COFINS/CSLL Não Retidos" },
+            { "3", "PIS/COFINS/CSLL Retidos" },
+        };
+
+        // Apenas o código 4 foi conferido em uma DANFSe oficial; os demais saem só com o código.
+        private static readonly Dictionary<String, String> TiposBeneficioMunicipal = new Dictionary<String, String>
+        {
+            { "4", "Alíquota diferenciada" },
         };
 
         private static String Descricao(String codigo, Dictionary<String, String> tabela)

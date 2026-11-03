@@ -55,7 +55,8 @@ namespace DanfeSharp.Eventos
                     gfx.EndLocalState();
                 }
 
-                gfx.DrawString("Impresso com DanfeSharp", new RectangleF(area.X, area.Bottom + 0.5F, area.Width, 4F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
+                if (ExibirAssinatura)
+                    gfx.DrawString(TextoAssinatura, new RectangleF(area.X, area.Bottom + 0.5F, area.Width, 4F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
             }
 
             _FoiGerado = true;

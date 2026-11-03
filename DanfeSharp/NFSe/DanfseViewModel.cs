@@ -134,6 +134,26 @@ namespace DanfeSharp.NFSe
         public String RetencaoIssqn { get; set; }
         public double? ValorIssqn { get; set; }
 
+        /// <summary>
+        /// Tipo do benefício municipal do ISSQN, ex.: Alíquota diferenciada.
+        /// </summary>
+        public String BeneficioMunicipal { get; set; }
+
+        /// <summary>
+        /// Valor do cálculo do benefício municipal (vCalcBM).
+        /// </summary>
+        public double? CalculoBeneficioMunicipal { get; set; }
+
+        /// <summary>
+        /// Total das deduções e reduções da base de cálculo do ISSQN.
+        /// </summary>
+        public double? TotalDeducoesReducoes { get; set; }
+
+        /// <summary>
+        /// Exibe a linha do benefício municipal e das deduções, como na DANFSe oficial, só quando a nota os informa.
+        /// </summary>
+        public bool ExibirBeneficioMunicipal { get; set; }
+
         #endregion
 
         #region Tributação federal (exceto CBS)

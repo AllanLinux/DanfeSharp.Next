@@ -64,7 +64,37 @@ dotnet add package DanfeSharp.Next
 | Plataforma | Versão do PDFsharp | Fontes |
 |---|---|---|
 | .NET Framework 4.5.2 ou superior | 1.50 | Times New Roman instalada no Windows |
-| .NET 8 ou superior (Windows, Linux e macOS) | 6.x | Times New Roman ou Liberation Serif instaladas |
+| .NET 8 ou superior (Windows, Linux e macOS) | 6.2.4 ou superior (veja abaixo) | Times New Roman ou Liberation Serif instaladas |
+
+### Versão do PDFsharp no .NET 8+
+
+O pacote instala o PDFsharp 6.2.4. A partir da versão 6.5.0, o PDFsharp passou a ser distribuído sob a **AGPL-3.0** e
+a verificar a licença ao gerar o PDF.
+
+| PDFsharp | Licença | Funciona com o DanfeSharp.Next |
+|---|---|---|
+| 6.0 a 6.2.3 | MIT | Não: o pacote exige no mínimo a 6.2.4. Atualize para a 6.2.4 |
+| **6.2.4** (recomendada) | **MIT** | Sim |
+| 6.5.0 ou superior | **AGPL-3.0** ou licença comercial da empira | Sim, desde que a licença seja declarada antes de gerar o primeiro documento |
+
+Os testes geram os mesmos PDFs com o PDFsharp 6.2.0, 6.2.4 e 6.5.0. A diferença da 6.5.0 é só de licença: sem a
+declaração, a geração falha com `PdfSharpLicenseException`.
+
+```csharp
+// Somente com o PDFsharp 6.5.0 ou superior, uma vez no início do programa:
+PdfSharp.PdfSharpLicense.SetAgplLicense();          // uso sob a AGPL (exige abrir o código do sistema)
+// ou
+PdfSharp.PdfSharpLicense.LoadLicense("sua-chave");  // licença comercial comprada da empira
+```
+
+Em sistemas comerciais de código fechado, fixe a versão MIT no seu projeto, para que nenhuma atualização leve à 6.5.0
+sem você perceber:
+
+```xml
+<PackageReference Include="PDFsharp" Version="[6.2.4]" />
+```
+
+O .NET Framework usa o PDFsharp 1.50 (MIT) e não é afetado.
 
 No Linux, instale a Liberation Serif, que tem as mesmas métricas da Times New Roman (pacote `fonts-liberation` no
 Debian/Ubuntu). Também é possível informar os arquivos da fonte antes de gerar o primeiro documento, o que é útil em
@@ -251,10 +281,40 @@ oficial: grade de 4 colunas, QR Code de consulta pública e os quadros de presta
 serviço, ISSQN, tributos federais, IBS/CBS e valor total. Os nomes dos municípios vêm da tabela do IBGE embutida na
 biblioteca, pois a NFS-e informa só o código. NFS-e de padrões municipais (ABRASF e outros) não são suportadas.
 
+Como a DANFSe é preenchida:
+
+- Todos os valores, alíquotas e bases vêm do XML: os da DPS, informados pelo emitente, e os da NFS-e, calculados pelo
+  Sistema Nacional. A biblioteca não tem alíquotas no código, então um XML antigo é impresso exatamente como foi
+  emitido, mesmo que as alíquotas mudem depois.
+- Só dois valores são calculados, para exibição: **Exclusões e Reduções da Base de Cálculo** (valor do serviço menos a
+  base do IBS/CBS) e **Total do IBS/CBS** (IBS mais CBS). Na transição da Reforma Tributária, as exclusões são o ISSQN,
+  o PIS e a COFINS.
+- A linha do **Benefício Municipal** no quadro do ISSQN só aparece quando a nota tem benefício municipal (`tpBM` ou o
+  grupo `BM` da DPS) ou deduções da base, como na DANFSe oficial.
+- Valores longos, como endereços, continuam nas linhas de baixo (até 3) e empurram o restante da página, como na
+  DANFSe oficial. A descrição do código de tributação nacional mostra só a primeira linha, também como na oficial.
+
 ### Logotipo
 
 Todos os documentos aceitam o logotipo em imagem (`AdicionarLogoImagem`, JPG ou PNG) ou em PDF (`AdicionarLogoPdf`,
 que mantém o desenho vetorial), por caminho de arquivo ou por `Stream`.
+
+### Assinatura no rodapé
+
+Os documentos em A4 (DANFE, eventos, DACTE e DANFSe) imprimem "Impresso com DanfeSharp.Next" no rodapé. Para não
+imprimir, desligue antes de gerar:
+
+```csharp
+using (var danfe = new Danfe(modelo))
+{
+    danfe.ExibirAssinatura = false; // padrão: true
+    danfe.Gerar();
+    danfe.Salvar("danfe.pdf");
+}
+```
+
+A opção vale para todos os documentos (`Danfe`, `DocumentoEvento`, `Dacte` e `Danfse`). O DANFE NFC-e não tem essa
+assinatura.
 
 ### Gerar em memória (APIs web)
 
@@ -313,10 +373,21 @@ Packages e em uma Release. Um número de versão publicado no nuget.org não pod
 - Os leiautes da NFC-e, dos eventos e do DACTE ainda não foram conferidos com notas reais. Valide com os seus
   documentos antes de usar em produção.
 - Não há norma que defina o IBS e a CBS no DACTE nem na NFC-e. Os quadros atuais são provisórios.
-- A DANFSe foi conferida com uma DANFSe oficial e um XML real, mas algumas descrições de códigos (como o tipo de
-  retenção do PIS/COFINS/CSLL) só foram confirmadas para os valores encontrados; os demais aparecem apenas com o código.
+- A DANFSe foi conferida com duas DANFSe oficiais e os XMLs reais correspondentes (Rio de Janeiro e Recife, com mais de
+  97% das palavras na mesma posição). Algumas descrições de códigos só foram confirmadas para os valores encontrados
+  nessas notas: tipo de retenção do PIS/COFINS/CSLL 0 e 3 e benefício municipal 4. Os demais códigos aparecem apenas
+  com o número.
 - Ainda não são gerados: DAMDFE, NFC-e em A4 e DACTE OS (modelo 67).
 
 ## Licença
 
 MIT. Veja [LICENSE.txt](LICENSE.txt), que mantém o aviso de copyright do projeto original.
+
+Dependências e suas licenças, nas versões instaladas pelo pacote:
+
+| Dependência | Versão | Licença |
+|---|---|---|
+| PDFsharp (.NET 8+) | 6.2.4 | MIT (a partir da 6.5.0, AGPL-3.0; veja "Versão do PDFsharp no .NET 8+") |
+| PDFsharp (.NET Framework) | 1.50.5147 | MIT |
+| QRCoder | 1.6.0 | MIT |
+| System.Security.Cryptography.Pkcs (.NET 8+) | 8.0.2 | MIT |

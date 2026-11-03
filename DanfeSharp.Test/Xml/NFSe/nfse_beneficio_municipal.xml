@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NFS-e fictícia com benefício municipal (alíquota diferenciada), endereço longo do prestador e PIS/COFINS/CSLL retidos. -->
+<NFSe versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse">
+	<infNFSe Id="NFS33045572212345678000195000000001238326091234567891">
+		<xLocEmi>Rio de Janeiro</xLocEmi>
+		<xLocPrestacao>Volta Redonda</xLocPrestacao>
+		<nNFSe>12383</nNFSe>
+		<cLocIncid>3306305</cLocIncid>
+		<xLocIncid>Volta Redonda</xLocIncid>
+		<xTribNac>Locação, sublocação, arrendamento, direito de passagem ou permissão de uso, compartilhado ou não, de postes, cabos, dutos e condutos de qualquer natureza.</xTribNac>
+		<xNBS>Serviços de locação de infraestrutura</xNBS>
+		<verAplic>SefinNacional_1.6.0</verAplic>
+		<ambGer>2</ambGer>
+		<tpEmis>1</tpEmis>
+		<procEmi>1</procEmi>
+		<cStat>100</cStat>
+		<dhProc>2026-09-01T16:28:48-03:00</dhProc>
+		<nDFSe>154000001</nDFSe>
+		<emit>
+			<CNPJ>12345678000195</CNPJ>
+			<xNome>ENERGIA EXEMPLO S A</xNome>
+			<enderNac>
+				<xLgr>AVENIDA EXEMPLO</xLgr>
+				<nro>168</nro>
+				<xCpl>SALA 202 BLOCO 09 / SALA 202 BLOCO 09 SALA 101 102 201 ANEXO DO PREDIO PRINCIPAL</xCpl>
+				<xBairro>CENTRO</xBairro>
+				<cMun>3304557</cMun>
+				<UF>RJ</UF>
+				<CEP>20080002</CEP>
+			</enderNac>
+			<email>FISCAL@ENERGIAEXEMPLO.COM.BR</email>
+		</emit>
+		<valores>
+			<tpBM>4</tpBM>
+			<vBC>185.40</vBC>
+			<pAliqAplic>5.00</pAliqAplic>
+			<vISSQN>9.27</vISSQN>
+			<vLiq>185.40</vLiq>
+		</valores>
+		<IBSCBS>
+			<cLocalidadeIncid>3306305</cLocalidadeIncid>
+			<xLocalidadeIncid>Volta Redonda</xLocalidadeIncid>
+			<valores>
+				<vBC>158.98</vBC>
+				<vCalcReeRepRes>0.00</vCalcReeRepRes>
+				<uf>
+					<pIBSUF>0.10</pIBSUF>
+					<pRedAliqUF>70.00</pRedAliqUF>
+					<pAliqEfetUF>0.03</pAliqEfetUF>
+				</uf>
+				<mun>
+					<pIBSMun>0.00</pIBSMun>
+					<pRedAliqMun>70.00</pRedAliqMun>
+					<pAliqEfetMun>0.00</pAliqEfetMun>
+				</mun>
+				<fed>
+					<pCBS>0.90</pCBS>
+					<pRedAliqCBS>70.00</pRedAliqCBS>
+					<pAliqEfetCBS>0.27</pAliqEfetCBS>
+				</fed>
+			</valores>
+			<totCIBS>
+				<vTotNF>185.40</vTotNF>
+				<gIBS>
+					<vIBSTot>0.05</vIBSTot>
+					<gIBSUFTot>
+						<vIBSUF>0.05</vIBSUF>
+					</gIBSUFTot>
+					<gIBSMunTot>
+						<vIBSMun>0.00</vIBSMun>
+					</gIBSMunTot>
+				</gIBS>
+				<gCBS>
+					<vCBS>0.43</vCBS>
+				</gCBS>
+			</totCIBS>
+		</IBSCBS>
+		<DPS versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse">
+			<infDPS Id="DPS330455721234567800019500001000000000201702">
+				<tpAmb>1</tpAmb>
+				<dhEmi>2026-09-01T16:28:44-03:00</dhEmi>
+				<verAplic>DanfeSharp</verAplic>
+				<serie>1</serie>
+				<nDPS>201702</nDPS>
+				<dCompet>2026-09-01</dCompet>
+				<tpEmit>1</tpEmit>
+				<cLocEmi>3304557</cLocEmi>
+				<prest>
+					<CNPJ>12345678000195</CNPJ>
+					<regTrib>
+						<opSimpNac>1</opSimpNac>
+						<regEspTrib>0</regEspTrib>
+					</regTrib>
+				</prest>
+				<toma>
+					<CNPJ>11111111000191</CNPJ>
+					<xNome>TELECOM EXEMPLO S A</xNome>
+					<end>
+						<endNac>
+							<cMun>3304557</cMun>
+							<CEP>23075570</CEP>
+						</endNac>
+						<xLgr>AV EXEMPLO</xLgr>
+						<nro>2200</nro>
+						<xBairro>NOVO BAIRRO</xBairro>
+					</end>
+				</toma>
+				<serv>
+					<locPrest>
+						<cLocPrestacao>3306305</cLocPrestacao>
+					</locPrest>
+					<cServ>
+						<cTribNac>030403</cTribNac>
+						<xDescServ>USO MUTUO- REF-SET26-VENC 30092026 - -. Lei 12.741-2012 - Valor Aproximado dos Tributos: Federais R$17,15 / Municipais R$9,27.</xDescServ>
+						<cNBS>110011210</cNBS>
+					</cServ>
+				</serv>
+				<valores>
+					<vServPrest>
+						<vServ>185.40</vServ>
+					</vServPrest>
+					<trib>
+						<tribMun>
+							<tribISSQN>1</tribISSQN>
+							<BM>
+								<nBM>33045570200017</nBM>
+							</BM>
+							<tpRetISSQN>1</tpRetISSQN>
+							<pAliq>5.00</pAliq>
+						</tribMun>
+						<tribFed>
+							<piscofins>
+								<CST>01</CST>
+								<vBCPisCofins>185.40</vBCPisCofins>
+								<pAliqPis>1.65</pAliqPis>
+								<pAliqCofins>7.60</pAliqCofins>
+								<vPis>3.06</vPis>
+								<vCofins>14.09</vCofins>
+								<tpRetPisCofins>3</tpRetPisCofins>
+							</piscofins>
+						</tribFed>
+						<totTrib>
+							<vTotTrib>
+								<vTotTribFed>17.15</vTotTribFed>
+								<vTotTribEst>0.00</vTotTribEst>
+								<vTotTribMun>9.27</vTotTribMun>
+							</vTotTrib>
+						</totTrib>
+					</trib>
+				</valores>
+				<IBSCBS>
+					<finNFSe>0</finNFSe>
+					<indFinal>0</indFinal>
+					<cIndOp>020201</cIndOp>
+					<indDest>0</indDest>
+					<valores>
+						<trib>
+							<gIBSCBS>
+								<CST>200</CST>
+								<cClassTrib>200027</cClassTrib>
+							</gIBSCBS>
+						</trib>
+					</valores>
+				</IBSCBS>
+			</infDPS>
+		</DPS>
+	</infNFSe>
+</NFSe>

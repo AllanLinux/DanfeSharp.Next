@@ -348,7 +348,16 @@ namespace DanfeSharp.NFSe
     {
         public ValorServicoDps vServPrest { get; set; }
         public DescontosDps vDescCondIncond { get; set; }
+        public DeducoesReducoesDps vDedRed { get; set; }
         public TributacaoDps trib { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class DeducoesReducoesDps
+    {
+        public double? pDR { get; set; }
+        public double? vDR { get; set; }
     }
 
     [Serializable]
@@ -382,9 +391,22 @@ namespace DanfeSharp.NFSe
     {
         public string tribISSQN { get; set; }
         public string cPaisResult { get; set; }
+        public BeneficioMunicipalDps BM { get; set; }
         public string tpImunidade { get; set; }
         public string tpRetISSQN { get; set; }
         public double? pAliq { get; set; }
+    }
+
+    /// <summary>
+    /// Benefício municipal do ISSQN informado na DPS.
+    /// </summary>
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class BeneficioMunicipalDps
+    {
+        public string nBM { get; set; }
+        public double? vRedBCBM { get; set; }
+        public double? pRedBCBM { get; set; }
     }
 
     [Serializable]

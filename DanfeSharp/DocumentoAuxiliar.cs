@@ -37,6 +37,17 @@ namespace DanfeSharp
         }
 
         /// <summary>
+        /// Texto da assinatura impressa no rodapé dos documentos.
+        /// </summary>
+        public const String TextoAssinatura = "Impresso com DanfeSharp.Next";
+
+        /// <summary>
+        /// Imprime a assinatura "Impresso com DanfeSharp.Next" no rodapé. Padrão: true.
+        /// Deve ser definido antes de chamar <see cref="Gerar"/>.
+        /// </summary>
+        public bool ExibirAssinatura { get; set; } = true;
+
+        /// <summary>
         /// Desenha o documento. Deve ser chamado uma única vez, antes de salvar.
         /// </summary>
         public abstract void Gerar();
@@ -124,7 +135,7 @@ namespace DanfeSharp
             if (!String.IsNullOrWhiteSpace(chaveAcesso)) info.Elements.SetString("/ChaveAcesso", chaveAcesso);
             info.Elements.SetString("/TipoDocumento", tipoDocumento);
             info.CreationDate = DateTime.Now;
-            info.Creator = String.Format("{0} {1} - {2}", "DanfeSharp", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, "https://github.com/SilverCard/DanfeSharp");
+            info.Creator = String.Format("{0} {1} - {2}", "DanfeSharp.Next", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, "https://github.com/AllanLinux/DanfeSharp.Next");
             info.Title = titulo;
         }
 
