@@ -286,9 +286,9 @@ Como a DANFSe é preenchida:
 - Todos os valores, alíquotas e bases vêm do XML: os da DPS, informados pelo emitente, e os da NFS-e, calculados pelo
   Sistema Nacional. A biblioteca não tem alíquotas no código, então um XML antigo é impresso exatamente como foi
   emitido, mesmo que as alíquotas mudem depois.
-- Só dois valores são calculados, para exibição: **Exclusões e Reduções da Base de Cálculo** (valor do serviço menos a
-  base do IBS/CBS) e **Total do IBS/CBS** (IBS mais CBS). Na transição da Reforma Tributária, as exclusões são o ISSQN,
-  o PIS e a COFINS.
+- Só dois valores são calculados, para exibição, pelas fórmulas da NT 008: **Exclusões e Reduções da Base de Cálculo**
+  (desconto incondicionado + reembolso/repasse/ressarcimento + ISSQN + PIS + COFINS) e **Total do IBS/CBS** (IBS mais
+  CBS).
 - A linha do **Benefício Municipal** no quadro do ISSQN só aparece quando a nota tem benefício municipal (`tpBM` ou o
   grupo `BM` da DPS) ou deduções da base, como na DANFSe oficial.
 - Valores longos, como endereços, continuam nas linhas de baixo (até 3) e empurram o restante da página, como na

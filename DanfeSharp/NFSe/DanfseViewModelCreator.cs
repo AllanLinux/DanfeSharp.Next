@@ -84,13 +84,14 @@ namespace DanfeSharp.NFSe
                 Tomador = Pessoa(dps.toma),
                 Intermediario = Pessoa(dps.interm),
                 Destinatario = Pessoa(ibsCbsDps?.dest),
+                ExibirMunicipioEmissor = !(Vazio(dps.serv?.cServ?.cTribNac)?.StartsWith("99") ?? false),
             };
 
             PreencherServico(m, inf, dps);
             PreencherTributacao(m, inf, dps);
             PreencherIbsCbs(m, inf.IBSCBS, ibsCbsDps);
             PreencherTotais(m, inf, dps);
-            m.InformacoesComplementares = InformacoesComplementares(dps);
+            m.InformacoesComplementares = InformacoesComplementares(inf, dps);
 
             return m;
         }
@@ -179,7 +180,7 @@ namespace DanfeSharp.NFSe
 
             m.CodigoTributacao = $"{CodigoTributacaoNacional(c?.cTribNac) ?? "-"} / {Vazio(c?.cTribMun) ?? "-"}";
             m.CodigoNbs = CodigoNbs(c?.cNBS);
-            m.DescricaoTributacaoNacional = inf.xTribNac;
+            m.DescricaoTributacaoNacional = Vazio(inf.xTribMun) ?? inf.xTribNac;
             m.DescricaoServico = c?.xDescServ;
 
             var local = serv?.locPrest;
@@ -195,6 +196,15 @@ namespace DanfeSharp.NFSe
             var mun = trib?.tribMun;
             var valores = inf.valores;
 
+            m.ExibirTributacaoMunicipal = mun != null;
+
+            var regEsp = Vazio(dps.prest?.regTrib?.regEspTrib);
+            m.RegimeEspecialTributacao = regEsp == null || regEsp == "0" ? null : Descricao(regEsp, RegimesEspeciaisTributacao);
+            m.TipoImunidade = mun?.tpImunidade == null ? null : Descricao(mun.tpImunidade, TiposImunidade);
+            m.SuspensaoExigibilidade = mun?.exigSusp?.tpSusp == null ? null : Descricao(mun.exigSusp.tpSusp, TiposSuspensao);
+            m.NumeroProcessoSuspensao = Vazio(mun?.exigSusp?.nProcesso);
+            m.ExibirRegimeEspecial = m.RegimeEspecialTributacao != null || m.TipoImunidade != null || m.SuspensaoExigibilidade != null || m.NumeroProcessoSuspensao != null;
+
             m.TipoTributacaoIssqn = mun?.tribISSQN == null ? null : Descricao(mun.tribISSQN, TiposTributacaoIssqn);
             m.RetencaoIssqn = mun?.tpRetISSQN == null ? null : Descricao(mun.tpRetISSQN, TiposRetencaoIssqn);
 
@@ -207,21 +217,44 @@ namespace DanfeSharp.NFSe
             m.AliquotaIssqn = valores?.pAliqAplic ?? mun?.pAliq;
             m.ValorIssqn = valores?.vISSQN;
 
-            m.BeneficioMunicipal = valores?.tpBM == null ? null : Descricao(valores.tpBM, TiposBeneficioMunicipal);
-            m.CalculoBeneficioMunicipal = valores?.vCalcBM;
-            m.TotalDeducoesReducoes = valores?.vCalcDR ?? dps.valores?.vDedRed?.vDR;
-            m.ExibirBeneficioMunicipal = valores?.tpBM != null || mun?.BM != null || m.TotalDeducoesReducoes.HasValue;
+            m.BeneficioMunicipal = BeneficioMunicipal(valores?.tpBM, mun?.BM);
+            m.CalculoBeneficioMunicipal = valores?.vCalcBM ?? mun?.BM?.vRedBCBM;
+
+            // Total deduções/reduções: vDR ou vCalcDR, mais o valor de reembolso/repasse/ressarcimento (NT 008, item 2.4.5).
+            var deducoes = dps.valores?.vDedRed?.vDR ?? valores?.vCalcDR;
+            var reembolso = inf.IBSCBS?.valores?.vCalcReeRepRes;
+            if (deducoes.HasValue || (reembolso ?? 0) > 0)
+                m.TotalDeducoesReducoes = Math.Round((deducoes ?? 0) + (reembolso ?? 0), 2);
+
+            m.ExibirBeneficioMunicipal = valores?.tpBM != null || mun?.BM != null || m.CalculoBeneficioMunicipal.HasValue
+                || m.TotalDeducoesReducoes.HasValue || dps.valores?.vDescCondIncond?.vDescIncond != null;
 
             var fed = trib?.tribFed;
+            var piscofins = fed?.piscofins;
+            var tpRet = Vazio(piscofins?.tpRetPisCofins);
             m.Irrf = fed?.vRetIRRF;
             m.ContribuicaoPrevidenciariaRetida = fed?.vRetCP;
-            m.ContribuicoesSociaisRetidas = fed?.vRetCSLL;
-            m.Pis = fed?.piscofins?.vPis;
-            m.Cofins = fed?.piscofins?.vCofins;
 
-            var tpRet = fed?.piscofins?.tpRetPisCofins;
+            if (tpRet == "1")
+            {
+                // PIS/COFINS Retido (código antigo): as contribuições retidas somam vRetCSLL, vPis e vCofins,
+                // e o PIS e a COFINS de apuração própria saem zerados (NT 008, item 2.4.5).
+                m.ContribuicoesSociaisRetidas = Soma(fed?.vRetCSLL, piscofins?.vPis, piscofins?.vCofins);
+                m.Pis = 0;
+                m.Cofins = 0;
+            }
+            else
+            {
+                m.ContribuicoesSociaisRetidas = fed?.vRetCSLL;
+                m.Pis = piscofins?.vPis;
+                m.Cofins = piscofins?.vCofins;
+            }
+
             if (tpRet != null)
                 m.DescricaoContribuicoesSociaisRetidas = TiposRetencaoPisCofins.TryGetValue(tpRet, out String d) ? $"{tpRet} - {d}" : tpRet;
+
+            // Linha impressa só para competências até o fim de 2026 (NT 008, nota 6).
+            m.ExibirPisCofins = !m.Competencia.HasValue || m.Competencia.Value.Year <= 2026;
         }
 
         private static void PreencherIbsCbs(DanfseViewModel m, IbsCbsNFSe ib, IbsCbsDps ibDps)
@@ -269,26 +302,72 @@ namespace DanfeSharp.NFSe
             m.TotalRetencoes = inf.valores?.vTotalRet;
             m.ValorLiquido = inf.valores?.vLiq;
 
-            // Exclusões e reduções: diferença entre o valor do serviço e a base do IBS e da CBS.
-            if (m.ValorServico.HasValue && m.BaseCalculoIbsCbs.HasValue)
-                m.ExclusoesReducoesBaseCalculo = Math.Max(0, Math.Round(m.ValorServico.Value - m.BaseCalculoIbsCbs.Value, 2));
+            // Exclusões e reduções da base do IBS/CBS: somatório de desconto incondicionado, reembolso/repasse/ressarcimento,
+            // ISSQN, PIS e COFINS (NT 008, item 2.4.5).
+            if (inf.IBSCBS != null)
+            {
+                var piscofins = valores?.trib?.tribFed?.piscofins;
+                m.ExclusoesReducoesBaseCalculo = Soma(m.DescontoIncondicionado, inf.IBSCBS.valores?.vCalcReeRepRes, inf.valores?.vISSQN,
+                    piscofins?.vPis, piscofins?.vCofins) ?? 0;
+            }
         }
 
-        private static String InformacoesComplementares(InfDps dps)
+        private static double? Soma(params double?[] valores)
         {
+            return valores.Any(v => v.HasValue) ? Math.Round(valores.Sum(v => v ?? 0), 2) : (double?)null;
+        }
+
+        private static String BeneficioMunicipal(String tpBM, BeneficioMunicipalDps bm)
+        {
+            switch (Vazio(tpBM))
+            {
+                case null: return null;
+                case "1": return "Isenção";
+                case "2": return bm?.pRedBCBM.HasValue == true ? $"Redução da BC em {Percentual(bm.pRedBCBM)}" : "Redução da BC";
+                case "3": return bm?.vRedBCBM.HasValue == true ? $"Redução da BC em {Moeda(bm.vRedBCBM)}" : "Redução da BC";
+                case "4": return "Alíquota diferenciada";
+                default: return tpBM.Trim();
+            }
+        }
+
+        /// <summary>
+        /// Informações complementares na ordem e com os rótulos da NT 008 (item 2.4.5), separadas por " | ".
+        /// A linha dos totais aproximados dos tributos (Lei 12.741/2012) é fixa e fica por último.
+        /// </summary>
+        private static String InformacoesComplementares(InfNFSe inf, InfDps dps)
+        {
+            var serv = dps.serv;
+            var compl = serv?.infoCompl;
+            var imoveis = dps.IBSCBS?.imovel?.gUnidImob?.Select(u => Vazio(u.inscImobFisc)).Where(i => i != null);
+            var inscImob = Vazio(serv?.obra?.inscImobFisc) ?? (imoveis != null && imoveis.Any() ? String.Join(", ", imoveis) : null);
+            var itensPedido = compl?.gItemPed?.xItemPed?.Select(Vazio).Where(i => i != null).ToList();
+
+            var partes = new List<String>();
+            void Adicionar(String rotulo, String valor)
+            {
+                if (!String.IsNullOrWhiteSpace(valor)) partes.Add($"{rotulo} {valor.Trim()}");
+            }
+
+            Adicionar("Inf. Cont.:", compl?.xInfComp);
+            Adicionar("NFS-e Subst.:", dps.subst?.chSubstda);
+            Adicionar("Doc. Ref.:", compl?.docRef);
+            Adicionar("Cod. Obra:", serv?.obra?.cObra);
+            Adicionar("Insc. Imob.:", inscImob);
+            Adicionar("Cod. Evt.:", serv?.atvEvento?.idAtvEvt);
+            Adicionar("Doc. Tec.:", compl?.idDocTec);
+            Adicionar("Núm. Ped.:", compl?.xPed);
+            Adicionar("Item Ped.:", itensPedido == null || itensPedido.Count == 0 ? null : String.Join(", ", itensPedido));
+            Adicionar("Inf. A. T. Mun.:", inf.xOutInf);
+
             var linhas = new List<String>();
-
-            if (!String.IsNullOrWhiteSpace(dps.subst?.chSubstda))
-                linhas.Add($"NFS-e substituída: {dps.subst.chSubstda}" + (String.IsNullOrWhiteSpace(dps.subst.xMotivo) ? "" : $" - {dps.subst.xMotivo}"));
-
-            if (!String.IsNullOrWhiteSpace(dps.serv?.infoCompl?.xInfComp))
-                linhas.Add(dps.serv.infoCompl.xInfComp.Trim());
+            if (partes.Count > 0)
+                linhas.Add(Limitar(String.Join(" | ", partes), 1997));
 
             var tot = dps.valores?.trib?.totTrib;
             if (tot?.vTotTrib != null)
                 linhas.Add($"Totais aproximados dos Tributos cfe. Lei n° 12.741/2012: Federais: {Moeda(tot.vTotTrib.vTotTribFed)}; Estaduais: {Moeda(tot.vTotTrib.vTotTribEst)}; Municipais: {Moeda(tot.vTotTrib.vTotTribMun)};");
             else if (tot?.pTotTrib != null)
-                linhas.Add($"Percentuais aproximados dos Tributos cfe. Lei n° 12.741/2012: Federais: {Percentual(tot.pTotTrib.pTotTribFed)}; Estaduais: {Percentual(tot.pTotTrib.pTotTribEst)}; Municipais: {Percentual(tot.pTotTrib.pTotTribMun)};");
+                linhas.Add($"Totais aproximados dos Tributos cfe. Lei n° 12.741/2012: Federais: {Percentual(tot.pTotTrib.pTotTribFed)}; Estaduais: {Percentual(tot.pTotTrib.pTotTribEst)}; Municipais: {Percentual(tot.pTotTrib.pTotTribMun)};");
 
             if (tot?.pTotTribSN != null)
                 linhas.Add($"Percentual aproximado dos tributos do Simples Nacional: {Percentual(tot.pTotTribSN)}");
@@ -296,9 +375,21 @@ namespace DanfeSharp.NFSe
             return linhas.Count == 0 ? null : String.Join("\n", linhas);
         }
 
+        /// <summary>
+        /// Limita o texto ao número de caracteres sugerido pela NT 008, terminando com reticências.
+        /// </summary>
+        internal static String Limitar(String texto, int maximo)
+        {
+            if (texto == null || texto.Length <= maximo) return texto;
+            return texto.Substring(0, maximo).TrimEnd() + "...";
+        }
+
         #endregion
 
         #region Tabelas de códigos
+
+        // Domínios do leiaute da NFS-e Nacional (Anexo VI, v1.04.01) e descrições da NT 008 (DANFSe).
+        // Quando o texto da DANFSe do site da NFS-e difere do leiaute, vale o do site (ex.: "Não optante").
 
         private static readonly Dictionary<String, String> TiposEmitente = new Dictionary<String, String>
         {
@@ -307,12 +398,15 @@ namespace DanfeSharp.NFSe
 
         private static readonly Dictionary<String, String> Situacoes = new Dictionary<String, String>
         {
-            { "100", "NFS-e Gerada" }, { "101", "NFS-e de Substituição Gerada" }, { "102", "NFS-e de Decisão Judicial" }, { "103", "NFS-e Avulsa" },
+            { "100", "NFS-e Gerada" },
+            { "102", "NFS-e de Decisão Judicial ou Administrativa" },
+            { "103", "NFS-e Avulsa" },
+            { "107", "NFS-e MEI" },
         };
 
         private static readonly Dictionary<String, String> Finalidades = new Dictionary<String, String>
         {
-            { "0", "NFS-e regular" },
+            { "0", "NFS-e regular" }, { "1", "NFS-e de crédito" }, { "2", "NFS-e de débito" },
         };
 
         private static readonly Dictionary<String, String> OpcoesSimplesNacional = new Dictionary<String, String>
@@ -320,13 +414,26 @@ namespace DanfeSharp.NFSe
             { "1", "Não optante" },
             { "2", "Optante - Microempreendedor Individual (MEI)" },
             { "3", "Optante - Microempresa ou Empresa de Pequeno Porte (ME/EPP)" },
+            { "4", "Optante Pendente" },
         };
 
         private static readonly Dictionary<String, String> RegimesApuracaoSimplesNacional = new Dictionary<String, String>
         {
-            { "1", "Tributos federais e municipal pelo SN" },
-            { "2", "Tributos federais pelo SN e ISSQN pela NFS-e" },
-            { "3", "Tributos federais e municipal pela NFS-e" },
+            { "1", "Regime de apuração dos tributos federais e municipal pelo SN" },
+            { "2", "Regime de apuração dos tributos federais pelo SN e o ISSQN pela NFS-e conforme respectiva legislação municipal do tributo" },
+            { "3", "Regime de apuração dos tributos federais e municipal pela NFS-e conforme respectivas legislações federal e municipal de cada tributo" },
+        };
+
+        private static readonly Dictionary<String, String> RegimesEspeciaisTributacao = new Dictionary<String, String>
+        {
+            { "0", "Nenhum" },
+            { "1", "Ato Cooperado (Cooperativa)" },
+            { "2", "Estimativa" },
+            { "3", "Microempresa Municipal" },
+            { "4", "Notário ou Registrador" },
+            { "5", "Profissional Autônomo" },
+            { "6", "Sociedade de Profissionais" },
+            { "9", "Outros" },
         };
 
         private static readonly Dictionary<String, String> TiposTributacaoIssqn = new Dictionary<String, String>
@@ -334,22 +441,40 @@ namespace DanfeSharp.NFSe
             { "1", "Operação Tributável" }, { "2", "Imunidade" }, { "3", "Exportação de Serviço" }, { "4", "Não Incidência" },
         };
 
+        private static readonly Dictionary<String, String> TiposImunidade = new Dictionary<String, String>
+        {
+            { "0", "Imunidade (tipo não informado na nota de origem)" },
+            { "1", "Patrimônio, renda ou serviços, uns dos outros (CF88, Art 150, VI, a)" },
+            { "2", "Entidades religiosas e templos de qualquer culto, inclusive suas organizações assistenciais e beneficentes (CF88, Art 150, VI, b)" },
+            { "3", "Patrimônio, renda ou serviços dos partidos políticos, inclusive suas fundações, das entidades sindicais dos trabalhadores, das instituições de educação e de assistência social, sem fins lucrativos, atendidos os requisitos da lei (CF88, Art 150, VI, c)" },
+            { "4", "Livros, jornais, periódicos e o papel destinado a sua impressão (CF88, Art 150, VI, d)" },
+            { "5", "Fonogramas e videofonogramas musicais produzidos no Brasil contendo obras musicais ou literomusicais de autores brasileiros e/ou obras em geral interpretadas por artistas brasileiros bem como os suportes materiais ou arquivos digitais que os contenham, salvo na etapa de replicação industrial de mídias ópticas de leitura a laser (CF88, Art 150, VI, e)" },
+        };
+
+        private static readonly Dictionary<String, String> TiposSuspensao = new Dictionary<String, String>
+        {
+            { "1", "Exigibilidade Suspensa por Decisão Judicial" },
+            { "2", "Exigibilidade Suspensa por Processo Administrativo" },
+        };
+
         private static readonly Dictionary<String, String> TiposRetencaoIssqn = new Dictionary<String, String>
         {
             { "1", "Não Retido" }, { "2", "Retido pelo Tomador" }, { "3", "Retido pelo Intermediário" },
         };
 
-        // Apenas os códigos conferidos em DANFSe oficiais têm descrição; os demais saem só com o código.
+        // Os códigos 1 e 2 são do leiaute anterior e deixam de ser aceitos quando os grupos IBSCBS se tornam obrigatórios.
         private static readonly Dictionary<String, String> TiposRetencaoPisCofins = new Dictionary<String, String>
         {
             { "0", "PIS/COFINS/CSLL Não Retidos" },
+            { "1", "PIS/COFINS Retido" },
+            { "2", "PIS/COFINS Não Retido" },
             { "3", "PIS/COFINS/CSLL Retidos" },
-        };
-
-        // Apenas o código 4 foi conferido em uma DANFSe oficial; os demais saem só com o código.
-        private static readonly Dictionary<String, String> TiposBeneficioMunicipal = new Dictionary<String, String>
-        {
-            { "4", "Alíquota diferenciada" },
+            { "4", "PIS/COFINS Retidos, CSLL Não Retido" },
+            { "5", "PIS Retido, COFINS/CSLL Não Retido" },
+            { "6", "COFINS Retido, PIS/CSLL Não Retido" },
+            { "7", "PIS Não Retido, COFINS/CSLL Retidos" },
+            { "8", "PIS/COFINS Não Retidos, CSLL Retido" },
+            { "9", "COFINS Não Retido, PIS/CSLL Retidos" },
         };
 
         private static String Descricao(String codigo, Dictionary<String, String> tabela)

@@ -154,6 +154,15 @@ namespace DanfeSharp.Graphics
             XGraphics.MultiplyTransform(new XMatrix(0, -1, 1, 0, 0, deslocamentoY.ToPoint()));
         }
 
+        /// <summary>
+        /// Gira o desenho em torno de um ponto (em mm). Ângulos positivos giram no sentido horário.
+        /// </summary>
+        public void RotacionarEm(float graus, PointF centro)
+        {
+            var c = centro.ToPointMeasure();
+            XGraphics.RotateAtTransform(graus, new XPoint(c.X, c.Y));
+        }
+
         private void CheckRectangle(RectangleF r)
         {
             if (r.X < 0 || r.Y < 0 || r.Width <= 0 || r.Height <= 0) throw new ArgumentException(nameof(r));

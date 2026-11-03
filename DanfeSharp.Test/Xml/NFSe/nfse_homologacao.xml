@@ -12,7 +12,7 @@
 		<ambGer>1</ambGer>
 		<tpEmis>1</tpEmis>
 		<procEmi>1</procEmi>
-		<cStat>101</cStat>
+		<cStat>102</cStat>
 		<dhProc>2026-10-20T09:15:00-03:00</dhProc>
 		<emit>
 			<CNPJ>55555555000191</CNPJ>
@@ -66,7 +66,7 @@
 					<regTrib>
 						<opSimpNac>2</opSimpNac>
 						<regApTribSN>1</regApTribSN>
-						<regEspTrib>0</regEspTrib>
+						<regEspTrib>2</regEspTrib>
 					</regTrib>
 				</prest>
 				<interm>
@@ -95,6 +95,11 @@
 						<cNBS>115021000</cNBS>
 					</cServ>
 					<infoCompl>
+						<xPed>PED-2026-0077</xPed>
+						<gItemPed>
+							<xItemPed>10</xItemPed>
+							<xItemPed>20</xItemPed>
+						</gItemPed>
 						<xInfComp>Pedido 2026-0077. Pagamento em 30 dias.</xInfComp>
 					</infoCompl>
 				</serv>
@@ -108,6 +113,10 @@
 					<trib>
 						<tribMun>
 							<tribISSQN>1</tribISSQN>
+							<exigSusp>
+								<tpSusp>1</tpSusp>
+								<nProcesso>0001234-56.2026.8.16.0001</nProcesso>
+							</exigSusp>
 							<tpRetISSQN>2</tpRetISSQN>
 							<pAliq>2.00</pAliq>
 						</tribMun>

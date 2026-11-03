@@ -140,7 +140,7 @@ namespace DanfeSharp.Test
 
             Assert.IsTrue(m.IsHomologacao);
             Assert.AreEqual("Tomador", m.Emitente);
-            Assert.AreEqual("NFS-e de Substituição Gerada", m.Situacao);
+            Assert.AreEqual("NFS-e de Decisão Judicial ou Administrativa", m.Situacao);
             Assert.AreEqual("900", m.SerieDps);
 
             Assert.AreEqual("123.456.789-09", m.Prestador.Documento);
@@ -149,7 +149,7 @@ namespace DanfeSharp.Test
             Assert.AreEqual("Curitiba / PR", m.Prestador.Municipio);
             Assert.AreEqual("(41) 99999-8888", m.Prestador.Telefone);
             Assert.AreEqual("Optante - Microempreendedor Individual (MEI)", m.Prestador.SimplesNacional);
-            Assert.AreEqual("Tributos federais e municipal pelo SN", m.Prestador.RegimeApuracaoSimplesNacional);
+            Assert.AreEqual("Regime de apuração dos tributos federais e municipal pelo SN", m.Prestador.RegimeApuracaoSimplesNacional);
 
             Assert.IsNull(m.Tomador);
             Assert.AreEqual("São Paulo / SP", m.Intermediario.Municipio);
@@ -164,9 +164,17 @@ namespace DanfeSharp.Test
             Assert.IsNull(m.BaseCalculoIbsCbs);
             Assert.IsNull(m.TotalIbsCbs);
 
-            StringAssert.StartsWith(m.InformacoesComplementares, "NFS-e substituída: 41069021");
-            StringAssert.Contains(m.InformacoesComplementares, "Pedido 2026-0077.");
+            // Ordem e rótulos da NT 008, separados por " | ".
+            StringAssert.StartsWith(m.InformacoesComplementares, "Inf. Cont.: Pedido 2026-0077. Pagamento em 30 dias. | NFS-e Subst.: 41069021");
+            StringAssert.Contains(m.InformacoesComplementares, " | Núm. Ped.: PED-2026-0077 | Item Ped.: 10, 20");
             StringAssert.Contains(m.InformacoesComplementares, "Simples Nacional: 6,00 %");
+
+            // Regime especial e suspensão da exigibilidade (NT 008, nota 5).
+            Assert.IsTrue(m.ExibirRegimeEspecial);
+            Assert.AreEqual("Estimativa", m.RegimeEspecialTributacao);
+            Assert.AreEqual("Exigibilidade Suspensa por Decisão Judicial", m.SuspensaoExigibilidade);
+            Assert.AreEqual("0001234-56.2026.8.16.0001", m.NumeroProcessoSuspensao);
+            Assert.IsNull(m.TipoImunidade);
         }
 
         [TestMethod]
@@ -191,6 +199,146 @@ namespace DanfeSharp.Test
             Assert.IsFalse(Ler("nfse_ibscbs.xml").ExibirBeneficioMunicipal);
             Assert.IsFalse(Ler("nfse_imune.xml").ExibirBeneficioMunicipal);
         }
+
+        #region Regras da NT 008 (DANFSe)
+
+        private DanfseViewModel LerAlterado(string arquivo, params string[] trocas)
+        {
+            var xml = File.ReadAllText(Path.Combine(InputDirectory, arquivo));
+            for (int i = 0; i < trocas.Length; i += 2)
+            {
+                Assert.IsTrue(xml.Contains(trocas[i]), trocas[i]);
+                xml = xml.Replace(trocas[i], trocas[i + 1]);
+            }
+            return DanfseViewModelCreator.CriarDeStringXml(xml);
+        }
+
+        [DataTestMethod]
+        [DataRow("0", "0 - PIS/COFINS/CSLL Não Retidos")]
+        [DataRow("1", "1 - PIS/COFINS Retido")]
+        [DataRow("2", "2 - PIS/COFINS Não Retido")]
+        [DataRow("3", "3 - PIS/COFINS/CSLL Retidos")]
+        [DataRow("4", "4 - PIS/COFINS Retidos, CSLL Não Retido")]
+        [DataRow("5", "5 - PIS Retido, COFINS/CSLL Não Retido")]
+        [DataRow("6", "6 - COFINS Retido, PIS/CSLL Não Retido")]
+        [DataRow("7", "7 - PIS Não Retido, COFINS/CSLL Retidos")]
+        [DataRow("8", "8 - PIS/COFINS Não Retidos, CSLL Retido")]
+        [DataRow("9", "9 - COFINS Não Retido, PIS/CSLL Retidos")]
+        public void RetencaoPisCofins_TodosOsCodigos(string codigo, string esperado)
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "<tpRetPisCofins>0</tpRetPisCofins>", $"<tpRetPisCofins>{codigo}</tpRetPisCofins>");
+            Assert.AreEqual(esperado, m.DescricaoContribuicoesSociaisRetidas);
+        }
+
+        [TestMethod]
+        public void RetencaoPisCofins_Codigo1_SomaRetencoesEZeraApuracaoPropria()
+        {
+            var m = LerAlterado("nfse_ibscbs.xml",
+                "<tpRetPisCofins>0</tpRetPisCofins>", "<tpRetPisCofins>1</tpRetPisCofins>",
+                "</piscofins>", "</piscofins><vRetCSLL>1.85</vRetCSLL>");
+
+            Assert.AreEqual(1.85 + 3.06 + 14.09, m.ContribuicoesSociaisRetidas.Value, 0.001);
+            Assert.AreEqual(0.0, m.Pis);
+            Assert.AreEqual(0.0, m.Cofins);
+        }
+
+        [DataTestMethod]
+        [DataRow("1", "Não optante")]
+        [DataRow("2", "Optante - Microempreendedor Individual (MEI)")]
+        [DataRow("3", "Optante - Microempresa ou Empresa de Pequeno Porte (ME/EPP)")]
+        [DataRow("4", "Optante Pendente")]
+        public void SimplesNacional_TodosOsCodigos(string codigo, string esperado)
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "<opSimpNac>1</opSimpNac>", $"<opSimpNac>{codigo}</opSimpNac>");
+            Assert.AreEqual(esperado, m.Prestador.SimplesNacional);
+        }
+
+        [DataTestMethod]
+        [DataRow("100", "NFS-e Gerada")]
+        [DataRow("102", "NFS-e de Decisão Judicial ou Administrativa")]
+        [DataRow("103", "NFS-e Avulsa")]
+        [DataRow("107", "NFS-e MEI")]
+        public void Situacao_TodosOsCodigos(string codigo, string esperado)
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "<cStat>100</cStat>", $"<cStat>{codigo}</cStat>");
+            Assert.AreEqual(esperado, m.Situacao);
+        }
+
+        [DataTestMethod]
+        [DataRow("0", "NFS-e regular")]
+        [DataRow("1", "NFS-e de crédito")]
+        [DataRow("2", "NFS-e de débito")]
+        public void Finalidade_TodosOsCodigos(string codigo, string esperado)
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "<finNFSe>0</finNFSe>", $"<finNFSe>{codigo}</finNFSe>");
+            Assert.AreEqual(esperado, m.Finalidade);
+        }
+
+        [DataTestMethod]
+        [DataRow("1", "Isenção")]
+        [DataRow("2", "Redução da BC")]
+        [DataRow("3", "Redução da BC")]
+        [DataRow("4", "Alíquota diferenciada")]
+        public void BeneficioMunicipal_TodosOsCodigos(string codigo, string esperado)
+        {
+            var m = LerAlterado("nfse_beneficio_municipal.xml", "<tpBM>4</tpBM>", $"<tpBM>{codigo}</tpBM>");
+            Assert.AreEqual(esperado, m.BeneficioMunicipal);
+        }
+
+        [TestMethod]
+        public void CompetenciaApos2026_OcultaLinhaDePisCofins()
+        {
+            Assert.IsTrue(Ler("nfse_ibscbs.xml").ExibirPisCofins);
+            var m = LerAlterado("nfse_ibscbs.xml", "<dCompet>2026-09-01</dCompet>", "<dCompet>2027-01-01</dCompet>");
+            Assert.IsFalse(m.ExibirPisCofins);
+            Assert.AreEqual(1, Gerar(m, "nfse_competencia_2027.pdf"));
+        }
+
+        [TestMethod]
+        public void SemTributacaoMunicipal_ExibeAvisoDeOperacaoNaoSujeita()
+        {
+            var xml = File.ReadAllText(Path.Combine(InputDirectory, "nfse_imune.xml"));
+            int inicio = xml.IndexOf("<tribMun>");
+            int fim = xml.IndexOf("</tribMun>") + "</tribMun>".Length;
+            var m = DanfseViewModelCreator.CriarDeStringXml(xml.Remove(inicio, fim - inicio));
+
+            Assert.IsFalse(m.ExibirTributacaoMunicipal);
+            Assert.AreEqual(1, Gerar(m, "nfse_sem_issqn.pdf"));
+        }
+
+        [TestMethod]
+        public void CodigoTributacaoItem99_OcultaMunicipioDoCabecalho()
+        {
+            Assert.IsTrue(Ler("nfse_ibscbs.xml").ExibirMunicipioEmissor);
+            Assert.IsFalse(LerAlterado("nfse_ibscbs.xml", "<cTribNac>030403</cTribNac>", "<cTribNac>990101</cTribNac>").ExibirMunicipioEmissor);
+        }
+
+        [TestMethod]
+        public void DescricaoDaTributacao_PrefereAMunicipal()
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "<xNBS>", "<xTribMun>Descrição municipal do serviço</xTribMun><xNBS>");
+            Assert.AreEqual("Descrição municipal do serviço", m.DescricaoTributacaoNacional);
+        }
+
+        [TestMethod]
+        public void ExclusoesDaBase_SomamIssPisCofins()
+        {
+            // 9,27 (ISSQN) + 3,06 (PIS) + 14,09 (COFINS) = 26,42 (NT 008, item 2.4.5).
+            Assert.AreEqual(26.42, Ler("nfse_ibscbs.xml").ExclusoesReducoesBaseCalculo);
+        }
+
+        [DataTestMethod]
+        [DataRow(true, false, "nfse_cancelada.pdf")]
+        [DataRow(false, true, "nfse_substituida.pdf")]
+        public void MarcaDagua(bool cancelada, bool substituida, string pdf)
+        {
+            var m = Ler("nfse_ibscbs.xml");
+            m.Cancelada = cancelada;
+            m.Substituida = substituida;
+            Assert.AreEqual(1, Gerar(m, pdf));
+        }
+
+        #endregion
 
         [TestMethod]
         public void XmlDeOutroDocumento_Recusado()

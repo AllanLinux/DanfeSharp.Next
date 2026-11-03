@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using DanfeSharp.Esquemas;
 
@@ -42,6 +43,12 @@ namespace DanfeSharp.NFSe
         public int cStat { get; set; }
         public DateTimeOffsetIso8601? dhProc { get; set; }
         public string nDFSe { get; set; }
+
+        /// <summary>
+        /// Informações de uso da Administração Tributária Municipal.
+        /// </summary>
+        public string xOutInf { get; set; }
+
         public EmitenteNFSe emit { get; set; }
         public ValoresNFSe valores { get; set; }
         public IbsCbsNFSe IBSCBS { get; set; }
@@ -311,7 +318,24 @@ namespace DanfeSharp.NFSe
     {
         public LocalPrestacaoDps locPrest { get; set; }
         public CodigoServicoDps cServ { get; set; }
+        public ObraDps obra { get; set; }
+        public AtividadeEventoDps atvEvento { get; set; }
         public InformacoesComplementaresDps infoCompl { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class ObraDps
+    {
+        public string inscImobFisc { get; set; }
+        public string cObra { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class AtividadeEventoDps
+    {
+        public string idAtvEvt { get; set; }
     }
 
     [Serializable]
@@ -339,7 +363,17 @@ namespace DanfeSharp.NFSe
     {
         public string idDocTec { get; set; }
         public string docRef { get; set; }
+        public string xPed { get; set; }
+        public ItensPedidoDps gItemPed { get; set; }
         public string xInfComp { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class ItensPedidoDps
+    {
+        [XmlElement("xItemPed")]
+        public List<string> xItemPed { get; set; }
     }
 
     [Serializable]
@@ -392,9 +426,18 @@ namespace DanfeSharp.NFSe
         public string tribISSQN { get; set; }
         public string cPaisResult { get; set; }
         public BeneficioMunicipalDps BM { get; set; }
+        public ExigibilidadeSuspensaDps exigSusp { get; set; }
         public string tpImunidade { get; set; }
         public string tpRetISSQN { get; set; }
         public double? pAliq { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class ExigibilidadeSuspensaDps
+    {
+        public string tpSusp { get; set; }
+        public string nProcesso { get; set; }
     }
 
     /// <summary>
@@ -471,7 +514,23 @@ namespace DanfeSharp.NFSe
         public string tpEnteGov { get; set; }
         public string indDest { get; set; }
         public PessoaDps dest { get; set; }
+        public ImovelDps imovel { get; set; }
         public ValoresIbsCbsDps valores { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class ImovelDps
+    {
+        [XmlElement("gUnidImob")]
+        public List<UnidadeImobiliariaDps> gUnidImob { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class UnidadeImobiliariaDps
+    {
+        public string inscImobFisc { get; set; }
     }
 
     [Serializable]

@@ -81,6 +81,24 @@ namespace DanfeSharp.NFSe
 
         public bool IsHomologacao => TipoAmbiente == 2;
 
+        /// <summary>
+        /// Exibe o município emissor no cabeçalho. Pela NT 008, não é exibido quando o item do código de
+        /// tributação nacional é 99.
+        /// </summary>
+        public bool ExibirMunicipioEmissor { get; set; } = true;
+
+        /// <summary>
+        /// Imprime a marca d'água "CANCELADA" (NT 008, item 2.5.1). O XML da NFS-e não traz o cancelamento,
+        /// que é um evento à parte; informe quando a NFS-e estiver cancelada.
+        /// </summary>
+        public bool Cancelada { get; set; }
+
+        /// <summary>
+        /// Imprime a marca d'água "SUBSTITUÍDA" (NT 008, item 2.5.2), para a NFS-e que foi substituída por outra.
+        /// O XML da NFS-e substituída não traz essa informação; informe quando for o caso.
+        /// </summary>
+        public bool Substituida { get; set; }
+
         #endregion
 
         #region Participantes
@@ -118,7 +136,7 @@ namespace DanfeSharp.NFSe
         public String LocalPrestacao { get; set; }
 
         /// <summary>
-        /// Descrição do código de tributação nacional.
+        /// Descrição do código de tributação: a municipal (xTribMun), quando informada, ou a nacional (xTribNac).
         /// </summary>
         public String DescricaoTributacaoNacional { get; set; }
         public String DescricaoServico { get; set; }
@@ -126,6 +144,34 @@ namespace DanfeSharp.NFSe
         #endregion
 
         #region Tributação municipal (ISSQN)
+
+        /// <summary>
+        /// Exibe o quadro do ISSQN. Quando a NFS-e não traz a tributação municipal, a DANFSe informa
+        /// "TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN" (NT 008, nota 4).
+        /// </summary>
+        public bool ExibirTributacaoMunicipal { get; set; } = true;
+
+        /// <summary>
+        /// Regime especial de tributação do ISSQN (regEspTrib), ex.: Estimativa.
+        /// </summary>
+        public String RegimeEspecialTributacao { get; set; }
+
+        /// <summary>
+        /// Tipo de imunidade do ISSQN (tpImunidade).
+        /// </summary>
+        public String TipoImunidade { get; set; }
+
+        /// <summary>
+        /// Suspensão da exigibilidade do ISSQN (tpSusp).
+        /// </summary>
+        public String SuspensaoExigibilidade { get; set; }
+
+        public String NumeroProcessoSuspensao { get; set; }
+
+        /// <summary>
+        /// Exibe a linha do regime especial, imunidade e suspensão, só quando a nota informa algum deles (NT 008, nota 5).
+        /// </summary>
+        public bool ExibirRegimeEspecial { get; set; }
 
         public String TipoTributacaoIssqn { get; set; }
         public String MunicipioIncidenciaIssqn { get; set; }
@@ -164,6 +210,12 @@ namespace DanfeSharp.NFSe
         public double? Pis { get; set; }
         public double? Cofins { get; set; }
         public String DescricaoContribuicoesSociaisRetidas { get; set; }
+
+        /// <summary>
+        /// Exibe a linha de PIS/COFINS de apuração própria e da descrição das contribuições retidas. Pela NT 008
+        /// (nota 6), ela é impressa só nas NFS-e com competência até o fim de 2026.
+        /// </summary>
+        public bool ExibirPisCofins { get; set; } = true;
 
         #endregion
 
