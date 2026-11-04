@@ -295,6 +295,29 @@ namespace DanfeSharp.Test
         }
 
         [TestMethod]
+        public void NaoIncidenciaDoIssqn_ExibeAvisoDeOperacaoNaoSujeita()
+        {
+            // tribISSQN = 4 (Não Incidência), como na DANFSe do site.
+            Assert.IsFalse(Ler("nfse_imune.xml").ExibirTributacaoMunicipal);
+            Assert.IsTrue(Ler("nfse_ibscbs.xml").ExibirTributacaoMunicipal);
+        }
+
+        [TestMethod]
+        public void TelefoneEEmailDoPrestador_SoDaDps()
+        {
+            // nfse_ibscbs: o emitente tem e-mail, mas a DPS não; nfse_imune: emitente e DPS com telefones diferentes.
+            Assert.IsNull(Ler("nfse_ibscbs.xml").Prestador.Email);
+            Assert.AreEqual("(21) 4000-4000", Ler("nfse_imune.xml").Prestador.Telefone);
+        }
+
+        [TestMethod]
+        public void TextosLivres_JuntamEspacosRepetidos()
+        {
+            var m = LerAlterado("nfse_ibscbs.xml", "Federais R$17,15", "Federais R$        17,15");
+            StringAssert.Contains(m.DescricaoServico, "Federais R$ 17,15");
+        }
+
+        [TestMethod]
         public void SemTributacaoMunicipal_ExibeAvisoDeOperacaoNaoSujeita()
         {
             var xml = File.ReadAllText(Path.Combine(InputDirectory, "nfse_imune.xml"));

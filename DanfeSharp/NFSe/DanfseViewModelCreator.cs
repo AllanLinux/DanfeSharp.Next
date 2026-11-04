@@ -105,13 +105,12 @@ namespace DanfeSharp.NFSe
             var p = Pessoa(prest) ?? new ParticipanteNfseViewModel();
 
             // A DPS normalmente traz só o documento do prestador; nome e endereço vêm do emitente da NFS-e.
+            // Telefone e e-mail vêm só da DPS (prest/fone e prest/email, NT 008), como na DANFSe do site.
             if (emit != null)
             {
                 if (String.IsNullOrWhiteSpace(p.Documento)) p.Documento = Documento(emit.CNPJ, emit.CPF, null);
                 p.InscricaoMunicipal = p.InscricaoMunicipal ?? emit.IM;
-                p.Telefone = p.Telefone ?? Formatador.FormatarTelefone(emit.fone);
                 p.Nome = p.Nome ?? emit.xNome;
-                p.Email = p.Email ?? emit.email;
 
                 var e = emit.enderNac;
                 if (e != null && prest?.end == null)
@@ -180,8 +179,8 @@ namespace DanfeSharp.NFSe
 
             m.CodigoTributacao = $"{CodigoTributacaoNacional(c?.cTribNac) ?? "-"} / {Vazio(c?.cTribMun) ?? "-"}";
             m.CodigoNbs = CodigoNbs(c?.cNBS);
-            m.DescricaoTributacaoNacional = Vazio(inf.xTribMun) ?? inf.xTribNac;
-            m.DescricaoServico = c?.xDescServ;
+            m.DescricaoTributacaoNacional = Espacos(Vazio(inf.xTribMun) ?? inf.xTribNac);
+            m.DescricaoServico = Espacos(c?.xDescServ);
 
             var local = serv?.locPrest;
             if (!String.IsNullOrWhiteSpace(local?.cLocPrestacao))
@@ -196,7 +195,7 @@ namespace DanfeSharp.NFSe
             var mun = trib?.tribMun;
             var valores = inf.valores;
 
-            m.ExibirTributacaoMunicipal = mun != null;
+            m.ExibirTributacaoMunicipal = mun != null && Vazio(mun.tribISSQN) != "4";
 
             var regEsp = Vazio(dps.prest?.regTrib?.regEspTrib);
             m.RegimeEspecialTributacao = regEsp == null || regEsp == "0" ? null : Descricao(regEsp, RegimesEspeciaisTributacao);
@@ -348,7 +347,7 @@ namespace DanfeSharp.NFSe
                 if (!String.IsNullOrWhiteSpace(valor)) partes.Add($"{rotulo} {valor.Trim()}");
             }
 
-            Adicionar("Inf. Cont.:", compl?.xInfComp);
+            Adicionar("Inf. Cont.:", Espacos(compl?.xInfComp));
             Adicionar("NFS-e Subst.:", dps.subst?.chSubstda);
             Adicionar("Doc. Ref.:", compl?.docRef);
             Adicionar("Cod. Obra:", serv?.obra?.cObra);
@@ -497,6 +496,11 @@ namespace DanfeSharp.NFSe
         }
 
         private static String Vazio(String s) => String.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+        /// <summary>
+        /// Junta espaços repetidos em um só, como a DANFSe do site faz nos textos livres.
+        /// </summary>
+        private static String Espacos(String s) => Vazio(s) == null ? null : System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"\s+", " ");
 
         private static String Juntar(String separador, params String[] partes)
         {

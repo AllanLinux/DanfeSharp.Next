@@ -146,8 +146,8 @@ namespace DanfeSharp.NFSe
         #region Tributação municipal (ISSQN)
 
         /// <summary>
-        /// Exibe o quadro do ISSQN. Quando a NFS-e não traz a tributação municipal, a DANFSe informa
-        /// "TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN" (NT 008, nota 4).
+        /// Exibe o quadro do ISSQN. Quando a NFS-e não traz a tributação municipal ou é de não incidência
+        /// (tribISSQN = 4), a DANFSe informa "TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN" (NT 008, nota 4).
         /// </summary>
         public bool ExibirTributacaoMunicipal { get; set; } = true;
 
