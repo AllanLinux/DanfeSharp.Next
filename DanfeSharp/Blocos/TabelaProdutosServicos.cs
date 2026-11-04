@@ -24,7 +24,7 @@ namespace DanfeSharp.Blocos
             var ae = AlinhamentoHorizontal.Esquerda;
 
             Tabela = new Tabela(Estilo);
-            String cabecalho4 = ViewModel.Emitente.CRT == "3" ? "O/CST" : "O/CSOSN";
+            String cabecalho4 = ViewModel.Emitente.CRT == "3" ? "CST" : "CSOSN";
 
             if (ViewModel.UsarLeiauteReformaTributaria)
             {
@@ -33,40 +33,46 @@ namespace DanfeSharp.Blocos
             }
 
             if (ViewModel.IsRetrato)
-            { 
+            {
                 Tabela
-                .ComColuna(8.5f, ac, "CÓDIGO", "PRODUTO")
+                .ComColuna(6.5F, ac, "CÓDIGO")
                 .ComColuna(0, ae, "DESCRIÇÃO DO PRODUTO / SERVIÇO")
                 .ComColuna(5.6F, ac, "NCM/SH")
-                .ComColuna(3.9F, ac, cabecalho4)
+                .ComColuna(4.1F, ac, cabecalho4)
                 .ComColuna(3.5F, ac, "CFOP")
-                .ComColuna(3.25F, ac, "UN")
-                .ComColuna(6F, ad, "QUANTI.")
-                .ComColuna(6F, ad, "VALOR", "UNIT.")
-                .ComColuna(6F, ad, "VALOR", "TOTAL")
-                .ComColuna(6F, ad, "B CÁLC", "ICMS")
-                .ComColuna(5, ad, "VALOR", "ICMS")
-                .ComColuna(5, ad, "VALOR", "IPI")
-                .ComColuna(3.5F, ad, "ALIQ.", "ICMS")
-                .ComColuna(3.5F, ad, "ALIQ.", "IPI");
+                .ComColuna(2.6F, ac, "UN")
+                .ComColuna(5.0F, ad, "QUANTI.")
+                .ComColuna(4.7F, ad, "VALOR", "UNIT.")
+                .ComColuna(4.7F, ad, "VALOR", "DESC.")
+                .ComColuna(5.0F, ad, "VALOR", "LÍQUIDO")
+                .ComColuna(5.0F, ad, "B CÁLC", "ICMS")
+                .ComColuna(4.7F, ad, "VALOR", "ICMS")
+                .ComColuna(5.0F, ad, "B CÁLC", "ICMS ST")
+                .ComColuna(4.7F, ad, "VALOR", "ICMS ST")
+                .ComColuna(4.7F, ad, "VALOR", "IPI")
+                .ComColuna(3.7F, ad, "ALIQ.", "ICMS")
+                .ComColuna(3.7F, ad, "ALIQ.", "IPI");
             }
             else
             {
                 Tabela
-                .ComColuna(8.1f, ac, "CÓDIGO PRODUTO")
+                .ComColuna(6F, ac, "CÓDIGO")
                 .ComColuna(0, ae, "DESCRIÇÃO DO PRODUTO / SERVIÇO")
-                .ComColuna(5.5F, ac, "NCM/SH")
-                .ComColuna(3.1F, ac, cabecalho4)
-                .ComColuna(3.1F, ac, "CFOP")
-                .ComColuna(3F, ac, "UN")
-                .ComColuna(5.25F, ad, "QUANTI.")
-                .ComColuna(5.6F, ad, "VALOR UNIT.")
-                .ComColuna(5.6F, ad, "VALOR TOTAL")
-                .ComColuna(5.6F, ad, "B CÁLC ICMS")
-                .ComColuna(5.6F, ad, "VALOR ICMS")
-                .ComColuna(5.6F, ad, "VALOR IPI")
-                .ComColuna(3F, ad, "ALIQ.", "ICMS")
-                .ComColuna(3F, ad, "ALIQ.", "IPI");
+                .ComColuna(4.8F, ac, "NCM/SH")
+                .ComColuna(4.1F, ac, cabecalho4)
+                .ComColuna(3.5F, ac, "CFOP")
+                .ComColuna(2.6F, ac, "UN")
+                .ComColuna(4.7F, ad, "QUANTI.")
+                .ComColuna(4.5F, ad, "VALOR", "UNIT.")
+                .ComColuna(4.5F, ad, "VALOR", "DESC.")
+                .ComColuna(4.8F, ad, "VALOR", "LÍQUIDO")
+                .ComColuna(4.8F, ad, "B CÁLC", "ICMS")
+                .ComColuna(4.5F, ad, "VALOR", "ICMS")
+                .ComColuna(4.8F, ad, "B CÁLC", "ICMS ST")
+                .ComColuna(4.5F, ad, "VALOR", "ICMS ST")
+                .ComColuna(4.5F, ad, "VALOR", "IPI")
+                .ComColuna(3.7F, ad, "ALIQ.", "ICMS")
+                .ComColuna(3.7F, ad, "ALIQ.", "IPI");
             }
 
             Tabela.AjustarLarguraColunas();
@@ -83,12 +89,15 @@ namespace DanfeSharp.Blocos
                     p.Unidade,
                     p.Quantidade.Formatar(),
                     p.ValorUnitario.Formatar(),
-                    p.ValorTotal.Formatar(),
+                    p.ValorDesconto.Formatar(),
+                    p.ValorLiquido.Formatar(),
                     p.BaseIcms.Formatar(),
                     p.ValorIcms.Formatar(),
-                    p.ValorIpi.Formatar(),
+                    p.BaseIcmsSt.Formatar(),
+                    p.ValorIcmsSt.Formatar(),
+                    (p.ValorIpi ?? 0).Formatar(),
                     p.AliquotaIcms.Formatar(),
-                    p.AliquotaIpi.Formatar()
+                    (p.AliquotaIpi ?? 0).Formatar()
                 };
 
                 Tabela.AdicionarLinha(linha);

@@ -40,7 +40,7 @@ namespace DanfeSharp
             // Deverá ter tamanho mínimo de seis(6) pontos, ou 17 CPP.
 
             FonteCorpo = estilo.CriarFonteRegular(6F);
-            FonteCabecalho = estilo.CriarFonteRegular(6F);
+            FonteCabecalho = estilo.CriarFonteRegular(5.5F);
         }
 
         public Tabela ComColuna(float larguraP, AlinhamentoHorizontal ah, params String[] cabecalho)
@@ -163,15 +163,13 @@ namespace DanfeSharp
 
                 if (r)
                 {
-                    if (LinhaAtual > 0)
-                    {
-                        gfx.BeginLocalState();
-                        gfx.SetStrokeColor(0.5, 0.5, 0.5);
-                        gfx.SetLineDash(6, 1);
-                        gfx.DrawLine(new PointF(BoundingBox.Left, _DY1), new PointF(BoundingBox.Right, _DY1));
-                        gfx.Stroke();
-                        gfx.EndLocalState();
-                    }
+                    // Linha tracejada na base de cada item (inclusive o último)
+                    gfx.BeginLocalState();
+                    gfx.SetStrokeColor(0.5, 0.5, 0.5);
+                    gfx.SetLineDash(6, 1);
+                    gfx.DrawLine(new PointF(BoundingBox.Left, _DY), new PointF(BoundingBox.Right, _DY));
+                    gfx.Stroke();
+                    gfx.EndLocalState();
 
                     LinhaAtual++;
                 }

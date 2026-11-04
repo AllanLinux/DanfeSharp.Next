@@ -12,7 +12,7 @@ namespace DanfeSharp.Blocos
             var m = ViewModel.CalculoImposto;
 
             AdicionarLinhaCampos()
-            .ComCampoNumerico("Valor total dos produtos", m.ValorTotalProdutos)
+            .ComCampoNumerico("Valor total dos produtos", m.ValorTotalProdutos ?? 0)
             .ComCampoNumerico("Valor do frete", m.ValorFrete)
             .ComCampoNumerico("Valor do seguro", m.ValorSeguro)
             .ComCampoNumerico("Desconto", m.Desconto)

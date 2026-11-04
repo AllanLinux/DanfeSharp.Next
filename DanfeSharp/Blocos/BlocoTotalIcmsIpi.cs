@@ -28,8 +28,8 @@ namespace DanfeSharp.Blocos
 
                 if (ViewModel.ExibirIcmsInterestadual)
                 {
-                    l.ComCampoNumerico("Valor do DIFAL na UF de destino", m.vICMSUFDest)
-                     .ComCampoNumerico("Valor do FCP na UF de destino", m.vFCPUFDest);
+                    l.ComCampoNumerico("Valor do DIFAL na UF de destino", m.vICMSUFDest ?? 0)
+                     .ComCampoNumerico("Valor do FCP na UF de destino", m.vFCPUFDest ?? 0);
                 }
 
                 l.ComLargurasIguais();
