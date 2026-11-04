@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DanfeSharp.Test
 {
     /// <summary>
-    /// Gera cada documento com e sem a assinatura "Impresso com DanfeSharp.Next" no rodapé.
+    /// Gera cada documento com e sem a assinatura (créditos) no rodapé.
     /// </summary>
     [TestClass]
     public class AssinaturaTests
@@ -57,6 +57,6 @@ namespace DanfeSharp.Test
             Gerar(new Danfse(DanfseViewModelCreator.CriarDeArquivoXml(Path.Combine("Xml", "NFSe", "nfse_ibscbs.xml"))), "danfse", exibir);
 
         [TestMethod]
-        public void Texto() => Assert.AreEqual("Impresso com DanfeSharp.Next", DocumentoAuxiliar.TextoAssinatura);
+        public void Texto() => Assert.AreEqual("DANFe", DocumentoAuxiliar.TextoAssinatura);
     }
 }

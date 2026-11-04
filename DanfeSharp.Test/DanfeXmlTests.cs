@@ -48,6 +48,33 @@ namespace DanfeSharp.Test
         public void v4_ComLocalRetirada() => TestXml("v4.00/v4_ComLocalRetirada.xml");
 
         [TestMethod]
+        public void v4_ComDesconto() => TestXml("v4.00/v4_ComDesconto.xml");
+
+        [TestMethod]
+        public void v4_ComDesconto_Paisagem()
+        {
+            var model = DanfeViewModelCreator.CriarDeArquivoXml(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml"));
+            model.Orientacao = Orientacao.Paisagem;
+            using (Danfe danfe = new Danfe(model))
+            {
+                danfe.Gerar();
+                danfe.Salvar(Path.Combine(OutputDirectory, "v4_ComDesconto_Paisagem.pdf"));
+            }
+        }
+
+        [TestMethod]
+        public void v4_ComCreditosPersonalizados()
+        {
+            var model = DanfeViewModelCreator.CriarDeArquivoXml(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml"));
+            using (Danfe danfe = new Danfe(model))
+            {
+                danfe.DefinirCreditos("Impresso com MeuSistema");
+                danfe.Gerar();
+                danfe.Salvar(Path.Combine(OutputDirectory, "v4_ComCreditos.pdf"));
+            }
+        }
+
+        [TestMethod]
         public void v4_ReformaTributaria() => TestXml("v4.00/v4_ReformaTributaria.xml");
 
         [TestMethod]

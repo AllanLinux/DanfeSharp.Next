@@ -17,8 +17,8 @@ namespace DanfeSharp.Blocos
 
             if (ViewModel.ExibirIcmsInterestadual)
             {
-                l.ComCampoNumerico("V. ICMS UF REMET.", m.vICMSUFRemet)
-                 .ComCampoNumerico("VALOR DO FCP", m.vFCPUFDest);
+                l.ComCampoNumerico("V. ICMS UF REMET.", m.vICMSUFRemet ?? 0)
+                 .ComCampoNumerico("VALOR DO FCP", m.vFCPUFDest ?? 0);
             }
 
             if (ViewModel.ExibirPisConfins)
@@ -26,7 +26,7 @@ namespace DanfeSharp.Blocos
                 l.ComCampoNumerico("VALOR DO PIS", m.ValorPis);
             }
 
-            l.ComCampoNumerico("V. TOTAL PRODUTOS", m.ValorTotalProdutos)
+            l.ComCampoNumerico("V. TOTAL PRODUTOS", m.ValorTotalProdutos ?? 0)
            .ComLargurasIguais();
 
             l = AdicionarLinhaCampos()
@@ -38,8 +38,8 @@ namespace DanfeSharp.Blocos
 
             if (ViewModel.ExibirIcmsInterestadual)
             {
-                l.ComCampoNumerico("V. ICMS UF DEST.", m.vICMSUFDest)
-                .ComCampoNumerico("V. TOT. TRIB.", m.ValorAproximadoTributos);
+                l.ComCampoNumerico("V. ICMS UF DEST.", m.vICMSUFDest ?? 0)
+                .ComCampoNumerico("V. TOT. TRIB.", m.ValorAproximadoTributos ?? 0);
             }
 
             if (ViewModel.ExibirPisConfins)
