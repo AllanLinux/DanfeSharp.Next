@@ -80,8 +80,8 @@ namespace DanfeSharp.CTe
 
                     if (ViewModel.IsHomologacao) DesenharAvisoHomologacao(gfx, corpo);
 
-                    if (ExibirAssinatura)
-                        gfx.DrawString(TextoAssinatura, new RectangleF(area.X, area.Bottom + 0.5F, area.Width, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
+                    if (ImprimirCreditos)
+                        gfx.DrawString(Creditos, new RectangleF(area.X, area.Bottom + 0.5F, area.Width, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
 
                     bool terminou = tabela.LinhaAtual >= tabela.Linhas.Count;
                     bool semProgresso = !primeira && tabela.LinhaAtual == linhaAnterior;

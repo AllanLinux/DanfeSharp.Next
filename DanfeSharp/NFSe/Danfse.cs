@@ -94,8 +94,8 @@ namespace DanfeSharp.NFSe
                 if (m.Cancelada) DesenharMarcaDagua("CANCELADA");
                 else if (m.Substituida) DesenharMarcaDagua("SUBSTITUÍDA");
 
-                if (ExibirAssinatura)
-                    _Gfx.DrawString(TextoAssinatura, new RectangleF(Esquerda, 289.5F, Direita - Esquerda, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
+                if (ImprimirCreditos)
+                    _Gfx.DrawString(Creditos, new RectangleF(Esquerda, 289.5F, Direita - Esquerda, 3F), new Fonte(FonteItalico, 6), AlinhamentoHorizontal.Direita);
             }
 
             _Gfx = null;
