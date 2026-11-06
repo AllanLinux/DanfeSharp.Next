@@ -36,8 +36,8 @@ namespace DanfeSharp
 
         public void DesenharCreditos()
         {
-            if (!Danfe.ExibirAssinatura) return;
-            Gfx.DrawString(DocumentoAuxiliar.TextoAssinatura, RetanguloCreditos, Danfe.EstiloPadrao.CriarFonteItalico(6), AlinhamentoHorizontal.Direita);
+            if (!Danfe.ImprimirCreditos) return;
+            Gfx.DrawString(Danfe.Creditos, RetanguloCreditos, Danfe.EstiloPadrao.CriarFonteItalico(6), AlinhamentoHorizontal.Direita);
         }
 
         private void DesenharCanhoto()

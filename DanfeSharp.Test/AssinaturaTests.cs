@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DanfeSharp.Test
 {
     /// <summary>
-    /// Gera cada documento com e sem a assinatura "Impresso com DanfeSharp.Next" no rodapé.
+    /// Gera cada documento com e sem a assinatura (créditos) no rodapé.
     /// </summary>
     [TestClass]
     public class AssinaturaTests

@@ -42,10 +42,27 @@ namespace DanfeSharp
         public const String TextoAssinatura = "Impresso com DanfeSharp.Next";
 
         /// <summary>
-        /// Imprime a assinatura "Impresso com DanfeSharp.Next" no rodapé. Padrão: true.
+        /// Imprime a assinatura (créditos) no rodapé. Padrão: true.
         /// Deve ser definido antes de chamar <see cref="Gerar"/>.
         /// </summary>
         public bool ExibirAssinatura { get; set; } = true;
+
+        /// <summary>
+        /// Texto de créditos impresso no rodapé (ex.: nome do seu sistema). Padrão: <see cref="TextoAssinatura"/>.
+        /// Vazio ou nulo não imprime nada. Deve ser definido antes de <see cref="Gerar"/>.
+        /// </summary>
+        public String Creditos { get; set; } = TextoAssinatura;
+
+        /// <summary>
+        /// Define o texto de créditos impresso no rodapé. Vazio ou nulo remove os créditos.
+        /// </summary>
+        public DocumentoAuxiliar DefinirCreditos(String creditos)
+        {
+            Creditos = creditos;
+            return this;
+        }
+
+        internal bool ImprimirCreditos => ExibirAssinatura && !String.IsNullOrWhiteSpace(Creditos);
 
         /// <summary>
         /// Desenha o documento. Deve ser chamado uma única vez, antes de salvar.
