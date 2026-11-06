@@ -234,6 +234,9 @@ namespace DanfeSharp.Modelo
             produto.ValorTotal = det.prod.vProd;
             produto.InformacoesAdicionais = det.infAdProd;
 
+            if (Double.TryParse(det.prod.vDesc, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double vDesc))
+                produto.ValorDesconto = vDesc;
+
             var imposto = det.imposto;
 
             if (imposto != null)
@@ -247,7 +250,9 @@ namespace DanfeSharp.Modelo
                         produto.ValorIcms = icms.vICMS;
                         produto.BaseIcms = icms.vBC;
                         produto.AliquotaIcms = icms.pICMS;
-                        produto.OCst = icms.orig + icms.CST + icms.CSOSN;
+                        produto.BaseIcmsSt = icms.vBCST;
+                        produto.ValorIcmsSt = icms.vICMSST;
+                        produto.OCst = icms.orig + " " + icms.CST + icms.CSOSN;
                     }
                 }
 

@@ -307,6 +307,8 @@ namespace DanfeSharp.Esquemas.NFe
         public double vBC { get; set; }
         public double pICMS { get; set; }
         public double vICMS { get; set; }
+        public double? vBCST { get; set; }
+        public double? vICMSST { get; set; }
     }
 
     public class ImpostoICMS00 : ImpostoICMS { }

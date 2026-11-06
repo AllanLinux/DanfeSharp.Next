@@ -48,6 +48,68 @@ namespace DanfeSharp.Test
         public void v4_ComLocalRetirada() => TestXml("v4.00/v4_ComLocalRetirada.xml");
 
         [TestMethod]
+        public void v4_ComDesconto() => TestXml("v4.00/v4_ComDesconto.xml");
+
+        [TestMethod]
+        public void v4_ComDesconto_Paisagem()
+        {
+            var model = DanfeViewModelCreator.CriarDeArquivoXml(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml"));
+            model.Orientacao = Orientacao.Paisagem;
+            using (Danfe danfe = new Danfe(model))
+            {
+                danfe.Gerar();
+                danfe.Salvar(Path.Combine(OutputDirectory, "v4_ComDesconto_Paisagem.pdf"));
+            }
+        }
+
+        [TestMethod]
+        public void v4_ComDesconto_LeValoresDoItem()
+        {
+            var produto = DanfeViewModelCreator.CriarDeArquivoXml(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml")).Produtos[0];
+
+            Assert.AreEqual(44.95, produto.ValorDesconto);
+            Assert.IsNull(produto.BaseIcmsSt, "Sem a tag no XML, o campo fica vazio, não 0,00.");
+            Assert.IsNull(produto.ValorIcmsSt, "Sem a tag no XML, o campo fica vazio, não 0,00.");
+        }
+
+        [TestMethod]
+        public void v4_ComIcmsSt_ExibeAsColunas()
+        {
+            var xml = File.ReadAllText(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml"))
+                .Replace("</orig>", "</orig><vBCST>500.00</vBCST><vICMSST>90.00</vICMSST>");
+
+            foreach (var orientacao in new[] { Orientacao.Retrato, Orientacao.Paisagem })
+            {
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
+                {
+                    var model = DanfeViewModelCreator.CriarDeArquivoXml(stream);
+                    model.Orientacao = orientacao;
+
+                    Assert.AreEqual(500, model.Produtos[0].BaseIcmsSt);
+                    Assert.AreEqual(90, model.Produtos[0].ValorIcmsSt);
+
+                    using (Danfe danfe = new Danfe(model))
+                    {
+                        danfe.Gerar();
+                        danfe.Salvar(Path.Combine(OutputDirectory, $"v4_ComIcmsSt_{orientacao}.pdf"));
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void v4_ComCreditosPersonalizados()
+        {
+            var model = DanfeViewModelCreator.CriarDeArquivoXml(Path.Combine(InputXmlDirectoryPrefix, "v4.00/v4_ComDesconto.xml"));
+            using (Danfe danfe = new Danfe(model))
+            {
+                danfe.DefinirCreditos("Impresso com MeuSistema");
+                danfe.Gerar();
+                danfe.Salvar(Path.Combine(OutputDirectory, "v4_ComCreditos.pdf"));
+            }
+        }
+
+        [TestMethod]
         public void v4_ReformaTributaria() => TestXml("v4.00/v4_ReformaTributaria.xml");
 
         [TestMethod]

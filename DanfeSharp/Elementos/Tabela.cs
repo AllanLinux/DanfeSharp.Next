@@ -163,15 +163,13 @@ namespace DanfeSharp
 
                 if (r)
                 {
-                    if (LinhaAtual > 0)
-                    {
-                        gfx.BeginLocalState();
-                        gfx.SetStrokeColor(0.5, 0.5, 0.5);
-                        gfx.SetLineDash(6, 1);
-                        gfx.DrawLine(new PointF(BoundingBox.Left, _DY1), new PointF(BoundingBox.Right, _DY1));
-                        gfx.Stroke();
-                        gfx.EndLocalState();
-                    }
+                    // Destaque divisório na base de cada item, inclusive o último (MOC 7.0, Anexo II, item 3.1.7).
+                    gfx.BeginLocalState();
+                    gfx.SetStrokeColor(0.5, 0.5, 0.5);
+                    gfx.SetLineDash(6, 1);
+                    gfx.DrawLine(new PointF(BoundingBox.Left, _DY), new PointF(BoundingBox.Right, _DY));
+                    gfx.Stroke();
+                    gfx.EndLocalState();
 
                     LinhaAtual++;
                 }
