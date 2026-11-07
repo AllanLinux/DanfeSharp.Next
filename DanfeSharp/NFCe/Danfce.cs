@@ -91,7 +91,7 @@ namespace DanfeSharp.NFCe
             itens.Add(new TextoCupom("DANFE NFC-e - Documento Auxiliar da Nota Fiscal de Consumidor Eletrônica", _FonteNegrito, centro));
 
             if (m.IsHomologacao)
-                itens.Add(new TextoCupom("EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL", _FonteNegrito, centro));
+                itens.Add(new FundoCinzaCupom(new TextoCupom("EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL", _FonteNegrito, centro)));
 
             if (m.IsContingencia)
                 itens.Add(new TextoCupom("EMITIDA EM CONTINGÊNCIA - Pendente de autorização", _FonteNegrito, centro));

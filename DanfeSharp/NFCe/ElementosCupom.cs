@@ -164,4 +164,30 @@ namespace DanfeSharp.NFCe
             gfx.ShowXObject(_Logo, new RectangleF(x, y, largura, Altura(largura)));
         }
     }
+
+    /// <summary>
+    /// Desenha um fundo cinza atrás de outro item (ex.: aviso de ambiente de homologação).
+    /// </summary>
+    internal class FundoCinzaCupom : ItemCupom
+    {
+        private readonly ItemCupom _Item;
+
+        public FundoCinzaCupom(ItemCupom item)
+        {
+            _Item = item ?? throw new ArgumentNullException(nameof(item));
+        }
+
+        public override float Altura(float largura) => _Item.Altura(largura);
+
+        public override void Desenhar(Gfx gfx, float x, float y, float largura)
+        {
+            gfx.BeginLocalState();
+            gfx.SetFillColor(0.85, 0.85, 0.85);
+            gfx.DrawRectangle(new RectangleF(x, y, largura, Altura(largura)));
+            gfx.Fill();
+            gfx.EndLocalState();
+
+            _Item.Desenhar(gfx, x, y, largura);
+        }
+    }
 }

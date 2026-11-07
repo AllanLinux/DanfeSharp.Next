@@ -24,7 +24,7 @@ namespace DanfeSharp.Blocos
             var ae = AlinhamentoHorizontal.Esquerda;
 
             Tabela = new Tabela(Estilo);
-            String cabecalho4 = ViewModel.Emitente.CRT == "3" ? "O/CST" : "O/CSOSN";
+            String cabecalho4 = ViewModel.Emitente.CRT == "3" ? "CST" : "CSOSN";
 
             if (ViewModel.UsarLeiauteReformaTributaria)
             {
@@ -32,8 +32,16 @@ namespace DanfeSharp.Blocos
                 return;
             }
 
-            if (ViewModel.IsRetrato)
-            { 
+            // Colunas de desconto e ICMS ST: só quando a nota as utiliza (MOC 7.0, Anexo II, item 3.1.7).
+            bool exibirDesconto = ViewModel.Produtos.Any(p => p.ValorDesconto > 0);
+            bool exibirIcmsSt = ViewModel.Produtos.Any(p => p.BaseIcmsSt > 0 || p.ValorIcmsSt > 0);
+
+            if (exibirDesconto || exibirIcmsSt)
+            {
+                ConfigurarColunasComDescontoOuIcmsSt(cabecalho4, exibirDesconto, exibirIcmsSt);
+            }
+            else if (ViewModel.IsRetrato)
+            {
                 Tabela
                 .ComColuna(8.5f, ac, "CÓDIGO", "PRODUTO")
                 .ComColuna(0, ae, "DESCRIÇÃO DO PRODUTO / SERVIÇO")
@@ -82,17 +90,67 @@ namespace DanfeSharp.Blocos
                     p.Cfop.Formatar("N0"),
                     p.Unidade,
                     p.Quantidade.Formatar(),
-                    p.ValorUnitario.Formatar(),
-                    p.ValorTotal.Formatar(),
-                    p.BaseIcms.Formatar(),
-                    p.ValorIcms.Formatar(),
-                    p.ValorIpi.Formatar(),
-                    p.AliquotaIcms.Formatar(),
-                    p.AliquotaIpi.Formatar()
+                    p.ValorUnitario.Formatar()
                 };
+
+                if (exibirDesconto) linha.Add(p.ValorDesconto.Formatar());
+
+                linha.Add(p.ValorTotal.Formatar());
+                linha.Add(p.BaseIcms.Formatar());
+
+                if (exibirIcmsSt) linha.Add(p.BaseIcmsSt.Formatar());
+
+                linha.Add(p.ValorIcms.Formatar());
+
+                if (exibirIcmsSt) linha.Add(p.ValorIcmsSt.Formatar());
+
+                linha.Add(p.ValorIpi.Formatar());
+                linha.Add(p.AliquotaIcms.Formatar());
+                linha.Add(p.AliquotaIpi.Formatar());
 
                 Tabela.AdicionarLinha(linha);
             }
+        }
+
+        /// <summary>
+        /// Colunas do quadro com Desconto e ICMS ST, na ordem do MOC 7.0, Anexo II, itens 3.8.1 e 3.8.2.
+        /// </summary>
+        private void ConfigurarColunasComDescontoOuIcmsSt(String cabecalhoCst, bool exibirDesconto, bool exibirIcmsSt)
+        {
+            var ad = AlinhamentoHorizontal.Direita;
+            var ac = AlinhamentoHorizontal.Centro;
+            var ae = AlinhamentoHorizontal.Esquerda;
+
+            float valor = ViewModel.IsRetrato ? 5.2F : 4.8F;
+            float imposto = 4.8F;
+            float aliquota = ViewModel.IsRetrato ? 3.5F : 3F;
+
+            Tabela
+            .ComColuna(6.5F, ac, "CÓDIGO", "PRODUTO")
+            .ComColuna(0, ae, "DESCRIÇÃO DO PRODUTO / SERVIÇO")
+            .ComColuna(5.6F, ac, "NCM/SH")
+            .ComColuna(3.9F, ac, cabecalhoCst)
+            .ComColuna(3.5F, ac, "CFOP")
+            .ComColuna(3.25F, ac, "UN")
+            .ComColuna(valor, ad, "QUANTI.")
+            .ComColuna(valor, ad, "VALOR", "UNIT.");
+
+            if (exibirDesconto) Tabela.ComColuna(valor, ad, "DESCONTO");
+
+            Tabela
+            .ComColuna(valor, ad, "VALOR", "TOTAL")
+            .ComColuna(valor, ad, "B CÁLC", "ICMS");
+
+            if (exibirIcmsSt) Tabela.ComColuna(valor, ad, "B CÁLC", "ICMS ST");
+
+            Tabela.ComColuna(imposto, ad, "VALOR", "ICMS");
+
+            if (exibirIcmsSt) Tabela.ComColuna(imposto, ad, "VALOR", "ICMS ST");
+
+            Tabela
+            .ComColuna(imposto, ad, "VALOR", "IPI")
+            .ComColuna(aliquota, ad, "ALIQ.", "ICMS")
+            .ComColuna(aliquota, ad, "ALIQ.", "IPI");
         }
 
         /// <summary>

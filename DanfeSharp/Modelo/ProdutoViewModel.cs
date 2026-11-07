@@ -30,7 +30,7 @@ namespace DanfeSharp.Modelo
 
 
         /// <summary>
-        /// <para>Origem da mercadoria + Tributação do ICMS</para>
+        /// <para>Origem da mercadoria + espaço + CST/CSOSN (ex.: "0 102")</para>
         /// <para>Tag orig e CST</para>
         /// </summary>
         public String OCst { get; set; }
@@ -106,6 +106,24 @@ namespace DanfeSharp.Modelo
         /// <para>Tag vTotTrib</para>
         /// </summary>
         public double? ValorAproximadoTributos { get; set; }
+
+        /// <summary>
+        /// <para>Valor do Desconto</para>
+        /// <para>Tag vDesc</para>
+        /// </summary>
+        public double? ValorDesconto { get; set; }
+
+        /// <summary>
+        /// <para>Valor da BC do ICMS ST</para>
+        /// <para>Tag vBCST</para>
+        /// </summary>
+        public double? BaseIcmsSt { get; set; }
+
+        /// <summary>
+        /// <para>Valor do ICMS ST</para>
+        /// <para>Tag vICMSST</para>
+        /// </summary>
+        public double? ValorIcmsSt { get; set; }
 
         #region Reforma Tributária - IBS, CBS e IS (NT 2025.002-RTC e NT 2026.010)
 
