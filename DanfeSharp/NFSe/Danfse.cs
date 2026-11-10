@@ -130,10 +130,12 @@ namespace DanfeSharp.NFSe
                 Centralizado("Documento Auxiliar da NFS-e", 11F, _Titulo);
             }
 
+            // Sem o município emissor, o site sobe as linhas do ambiente.
+            float ambiente = m.ExibirMunicipioEmissor ? 9.2F : 7.6F;
             if (m.ExibirMunicipioEmissor)
                 Texto($"Município: {m.MunicipioEmissor ?? "-"}", ColunaX(3), 6.6F, _Municipio, LarguraColuna - Recuo);
-            Texto($"Ambiente Gerador: {m.AmbienteGerador}", ColunaX(3), 9.2F, _Pequena);
-            Texto($"Tipo de Ambiente: {m.TipoAmbiente}", ColunaX(3), 11.5F, _Pequena);
+            Texto($"Ambiente Gerador: {m.AmbienteGerador}", ColunaX(3), ambiente, _Pequena);
+            Texto($"Tipo de Ambiente: {m.TipoAmbiente}", ColunaX(3), ambiente + 2.4F, _Pequena);
 
             LinhaHorizontal(14.1F);
         }
@@ -390,7 +392,7 @@ namespace DanfeSharp.NFSe
             Texto("INFORMAÇÕES COMPLEMENTARES", ColunaX(0), titulo, _TituloQuadro);
 
             // O texto ocupa o espaço até o canhoto.
-            float primeira = titulo + 7.1F;
+            float primeira = titulo + 4.3F;
             int maximo = Math.Max(1, (int)((TopoCanhoto - 2F - primeira) / LinhaTexto) + 1);
             Paragrafo(ViewModel.InformacoesComplementares, ColunaX(0), primeira, Direita - Esquerda - 2 * Recuo, _Valor, LinhaTexto, maximo);
         }
@@ -531,6 +533,9 @@ namespace DanfeSharp.NFSe
             var linhas = new List<String>();
             foreach (var paragrafo in texto.Replace("\r", "").Split('\n'))
             {
+                // Linha vazia ocupa espaço, como a primeira linha das informações complementares sem dados do contribuinte.
+                if (paragrafo.Trim().Length == 0) { linhas.Add(String.Empty); continue; }
+
                 var bloco = new TextBlock(paragrafo, fonte) { Width = largura };
                 if (bloco.Height > 0) linhas.AddRange(bloco.Lines);
             }

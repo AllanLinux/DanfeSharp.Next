@@ -261,3 +261,8 @@ __pycache__/
 *.pyc
 # Pacotes NuGet gerados localmente
 nupkgs/
+
+# PDFs gerados localmente com notas reais (nao versionar)
+/Exemplos_PDF/
+/Comparacao_PDF/
+/*.pdf
