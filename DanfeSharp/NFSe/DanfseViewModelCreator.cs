@@ -180,7 +180,7 @@ namespace DanfeSharp.NFSe
             m.CodigoTributacao = $"{CodigoTributacaoNacional(c?.cTribNac) ?? "-"} / {Vazio(c?.cTribMun) ?? "-"}";
             m.CodigoNbs = CodigoNbs(c?.cNBS);
             m.DescricaoTributacaoNacional = Espacos(Vazio(inf.xTribMun) ?? inf.xTribNac);
-            m.DescricaoServico = Espacos(c?.xDescServ);
+            m.DescricaoServico = EspacosPreservandoLinhas(c?.xDescServ);
 
             var local = serv?.locPrest;
             if (!String.IsNullOrWhiteSpace(local?.cLocPrestacao))
@@ -267,6 +267,15 @@ namespace DanfeSharp.NFSe
                 m.IndicadorOperacaoIncidencia = $"{Vazio(ibDps?.cIndOp) ?? "-"} / {Vazio(cLoc) ?? "-"} / {ib?.xLocalidadeIncid ?? Municipios.Nome(cLoc) ?? "-"} / {Municipios.Uf(cLoc) ?? "-"}";
             }
 
+            // Sem o grupo IBS/CBS, a DANFSe do site mantém as barras de cada campo e totais zerados.
+            m.CstClassificacaoTributaria = m.CstClassificacaoTributaria ?? "- / -";
+            m.IndicadorOperacaoIncidencia = m.IndicadorOperacaoIncidencia ?? "- / - / - / -";
+            if (ib == null && ibDps == null)
+            {
+                m.TotalIbsCbs = 0;
+                m.ValorLiquidoComIbsCbs = 0;
+            }
+
             if (ib == null) return;
 
             var v = ib.valores;
@@ -287,9 +296,7 @@ namespace DanfeSharp.NFSe
             m.ValorIbs = t?.gIBS?.vIBSTot;
             m.ValorCbs = t?.gCBS?.vCBS;
             m.ValorLiquidoComIbsCbs = t?.vTotNF;
-
-            if (m.ValorIbs.HasValue || m.ValorCbs.HasValue)
-                m.TotalIbsCbs = Math.Round((m.ValorIbs ?? 0) + (m.ValorCbs ?? 0), 2);
+            m.TotalIbsCbs = m.ValorIbs.HasValue || m.ValorCbs.HasValue ? Math.Round((m.ValorIbs ?? 0) + (m.ValorCbs ?? 0), 2) : (double?)null;
         }
 
         private static void PreencherTotais(DanfseViewModel m, InfNFSe inf, InfDps dps)
@@ -303,12 +310,13 @@ namespace DanfeSharp.NFSe
 
             // Exclusões e reduções da base do IBS/CBS: somatório de desconto incondicionado, reembolso/repasse/ressarcimento,
             // ISSQN, PIS e COFINS (NT 008, item 2.4.5).
-            if (inf.IBSCBS != null)
-            {
-                var piscofins = valores?.trib?.tribFed?.piscofins;
-                m.ExclusoesReducoesBaseCalculo = Soma(m.DescontoIncondicionado, inf.IBSCBS.valores?.vCalcReeRepRes, inf.valores?.vISSQN,
-                    piscofins?.vPis, piscofins?.vCofins) ?? 0;
-            }
+            // Só o vCalcReeRepRes fica no grupo IBSCBS; os demais campos existem mesmo quando a nota não traz IBS/CBS,
+            // então a soma é feita sempre. Sem nenhum dos campos, fica nulo e imprime "-" (NT 008, nota 12).
+            var piscofins = valores?.trib?.tribFed?.piscofins;
+            m.ExclusoesReducoesBaseCalculo = Soma(m.DescontoIncondicionado, inf.IBSCBS?.valores?.vCalcReeRepRes, inf.valores?.vISSQN,
+                piscofins?.vPis, piscofins?.vCofins);
+            if (!m.ExclusoesReducoesBaseCalculo.HasValue && inf.IBSCBS != null)
+                m.ExclusoesReducoesBaseCalculo = 0;
         }
 
         private static double? Soma(params double?[] valores)
@@ -358,9 +366,8 @@ namespace DanfeSharp.NFSe
             Adicionar("Item Ped.:", itensPedido == null || itensPedido.Count == 0 ? null : String.Join(", ", itensPedido));
             Adicionar("Inf. A. T. Mun.:", inf.xOutInf);
 
-            var linhas = new List<String>();
-            if (partes.Count > 0)
-                linhas.Add(Limitar(String.Join(" | ", partes), 1997));
+            // Como na DANFSe do site, a primeira linha é das informações do contribuinte; sem elas, fica em branco.
+            var linhas = new List<String> { partes.Count > 0 ? Limitar(String.Join(" | ", partes), 1997) : String.Empty };
 
             var tot = dps.valores?.trib?.totTrib;
             if (tot?.vTotTrib != null)
@@ -371,7 +378,7 @@ namespace DanfeSharp.NFSe
             if (tot?.pTotTribSN != null)
                 linhas.Add($"Percentual aproximado dos tributos do Simples Nacional: {Percentual(tot.pTotTribSN)}");
 
-            return linhas.Count == 0 ? null : String.Join("\n", linhas);
+            return linhas.Count == 1 && linhas[0].Length == 0 ? null : String.Join("\n", linhas);
         }
 
         /// <summary>
@@ -501,6 +508,18 @@ namespace DanfeSharp.NFSe
         /// Junta espaços repetidos em um só, como a DANFSe do site faz nos textos livres.
         /// </summary>
         private static String Espacos(String s) => Vazio(s) == null ? null : System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"\s+", " ");
+
+        private static String EspacosPreservandoLinhas(String s)
+        {
+            if (Vazio(s) == null) return null;
+
+            var linhas = s.Replace("\r", "")
+                .Split('\n')
+                .Select(l => System.Text.RegularExpressions.Regex.Replace(l.Trim(), @"[ \t]+", " "))
+                .Where(l => l.Length > 0);
+
+            return String.Join("\n", linhas);
+        }
 
         private static String Juntar(String separador, params String[] partes)
         {

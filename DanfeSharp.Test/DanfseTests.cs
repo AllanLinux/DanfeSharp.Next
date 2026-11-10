@@ -368,5 +368,33 @@ namespace DanfeSharp.Test
         {
             Assert.ThrowsException<XmlException>(() => DanfseViewModelCreator.CriarDeArquivoXml(Path.Combine("Xml", "CTe", "cte_rodoviario.xml")));
         }
+
+        [TestMethod]
+        public void DescricaoDoServico_MantemQuebrasDeLinha()
+        {
+            // Como na DANFSe do site (nota de Fortaleza): quebras mantidas, linhas vazias e espaços repetidos removidos.
+            var m = LerAlterado("nfse_ibscbs.xml", "USO MUTUO- REF", "USO MUTUO-\n\n   REF");
+            StringAssert.StartsWith(m.DescricaoServico, "USO MUTUO-\nREF-SET26");
+        }
+
+        [TestMethod]
+        public void SemGrupoIbsCbs_ComoNoSite()
+        {
+            // Nota sem o grupo IBS/CBS (nota de Serra): exclusões somadas, barras mantidas e totais zerados.
+            var m = LerAlterado("nfse_ibscbs.xml", "<IBSCBS>", "<IBSCBSAusente>", "</IBSCBS>", "</IBSCBSAusente>");
+
+            Assert.IsTrue(m.ExclusoesReducoesBaseCalculo > 0);
+            Assert.IsNull(m.BaseCalculoIbsCbs);
+            Assert.AreEqual("- / -", m.CstClassificacaoTributaria);
+            Assert.AreEqual("- / - / - / -", m.IndicadorOperacaoIncidencia);
+            Assert.AreEqual(0, m.TotalIbsCbs);
+            Assert.AreEqual(0, m.ValorLiquidoComIbsCbs);
+        }
+
+        [TestMethod]
+        public void InformacoesComplementares_SoComTotais_PrimeiraLinhaEmBranco()
+        {
+            StringAssert.StartsWith(Ler("nfse_ibscbs.xml").InformacoesComplementares, "\nTotais aproximados");
+        }
     }
 }
