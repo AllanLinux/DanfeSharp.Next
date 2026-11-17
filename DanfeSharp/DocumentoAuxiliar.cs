@@ -17,6 +17,16 @@ namespace DanfeSharp
         internal FamiliaFonte FonteNegrito { get; private set; }
         internal FamiliaFonte FonteItalico { get; private set; }
 
+        /// <summary>
+        /// Arial negrito, usada nos títulos e rótulos da DANFSe, como no site da NFS-e.
+        /// </summary>
+        internal FamiliaFonte FonteNegritoArial { get; private set; }
+
+        /// <summary>
+        /// Microsoft Sans Serif, usada nos valores da DANFSe, como no site da NFS-e.
+        /// </summary>
+        internal FamiliaFonte FonteSansSerif { get; private set; }
+
         private XImage _LogoObject = null;
         private MemoryStream _LogoStream = null;
 
@@ -34,6 +44,8 @@ namespace DanfeSharp
             FonteRegular = FamiliaFonte.TimesRegular();
             FonteNegrito = FamiliaFonte.TimesNegrito();
             FonteItalico = FamiliaFonte.TimesItalico();
+            FonteNegritoArial = FamiliaFonte.ArialNegrito();
+            FonteSansSerif = FamiliaFonte.SansSerifRegular();
         }
 
         /// <summary>

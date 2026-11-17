@@ -396,5 +396,25 @@ namespace DanfeSharp.Test
         {
             StringAssert.StartsWith(Ler("nfse_ibscbs.xml").InformacoesComplementares, "\nTotais aproximados");
         }
+
+        [TestMethod]
+        public void Fontes_ComoNoSite()
+        {
+            // NT 008, item 2.4: Arial nos títulos e rótulos e Microsoft Sans Serif nos conteúdos.
+            String pasta = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+            if (!File.Exists(Path.Combine(pasta, "arialbd.ttf")) || !File.Exists(Path.Combine(pasta, "micross.ttf")))
+                Assert.Inconclusive("Arial ou Microsoft Sans Serif não estão instaladas.");
+
+            using (var danfse = new Danfse(Ler("nfse_ibscbs.xml")))
+            using (var ms = new MemoryStream())
+            {
+                danfse.Gerar();
+                danfse.Salvar(ms);
+                String pdf = System.Text.Encoding.ASCII.GetString(ms.ToArray());
+
+                StringAssert.Contains(pdf, "Arial,Bold");
+                StringAssert.Contains(pdf, "Microsoft");
+            }
+        }
     }
 }

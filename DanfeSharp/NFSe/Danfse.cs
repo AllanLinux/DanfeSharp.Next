@@ -45,13 +45,15 @@ namespace DanfeSharp.NFSe
         {
             ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
 
-            _Titulo = new Fonte(FonteNegrito, 9);
-            _TituloQuadro = new Fonte(FonteNegrito, 7);
-            _RotuloIdentificacao = new Fonte(FonteNegrito, 7);
-            _Rotulo = new Fonte(FonteNegrito, 6);
-            _Valor = new Fonte(FonteRegular, 7);
-            _Pequena = new Fonte(FonteRegular, 6);
-            _Municipio = new Fonte(FonteRegular, 8);
+            // Títulos e rótulos em Arial negrito, como na DANFSe do site.
+            _Titulo = new Fonte(FonteNegritoArial, 9);
+            _TituloQuadro = new Fonte(FonteNegritoArial, 7);
+            _RotuloIdentificacao = new Fonte(FonteNegritoArial, 7);
+            _Rotulo = new Fonte(FonteNegritoArial, 6);
+            // Valores em Microsoft Sans Serif, como na DANFSe do site.
+            _Valor = new Fonte(FonteSansSerif, 7);
+            _Pequena = new Fonte(FonteSansSerif, 6);
+            _Municipio = new Fonte(FonteSansSerif, 8);
 
             // Logotipo da NFS-e, como na DANFSe oficial. AdicionarLogoImagem ou AdicionarLogoPdf o substituem.
             using (var logo = typeof(Danfse).Assembly.GetManifestResourceStream("DanfeSharp.NFSe.logo_nfse.png"))
@@ -211,7 +213,8 @@ namespace DanfeSharp.NFSe
         /// </summary>
         private float Aviso(float y, String texto)
         {
-            Centralizado(texto, y + 2.3F, _Rotulo);
+            // Como no site, os avisos usam a fonte dos conteúdos, em 7 pt e sem negrito.
+            Centralizado(texto, y + 2.3F, _Valor);
             float fim = y + 2.95F;
             LinhaHorizontal(fim);
             return fim;

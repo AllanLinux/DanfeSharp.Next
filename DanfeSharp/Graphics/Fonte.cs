@@ -16,6 +16,12 @@ namespace DanfeSharp.Graphics
         // De acordo com o item 7.7, a fonte deve ser Times New Roman ou Courier New.
         public const String NomeTimesNewRoman = "Times New Roman";
 
+        // A DANFSe do site usa Arial nos títulos e rótulos.
+        public const String NomeArial = "Arial";
+
+        // E Microsoft Sans Serif nos valores.
+        public const String NomeSansSerif = "Microsoft Sans Serif";
+
         private readonly Dictionary<float, XFont> _Fontes = new Dictionary<float, XFont>();
 
         public String Nome { get; private set; }
@@ -45,6 +51,8 @@ namespace DanfeSharp.Graphics
         public static FamiliaFonte TimesRegular() => new FamiliaFonte(NomeTimesNewRoman, XFontStyleEx.Regular);
         public static FamiliaFonte TimesNegrito() => new FamiliaFonte(NomeTimesNewRoman, XFontStyleEx.Bold);
         public static FamiliaFonte TimesItalico() => new FamiliaFonte(NomeTimesNewRoman, XFontStyleEx.Italic);
+        public static FamiliaFonte ArialNegrito() => new FamiliaFonte(NomeArial, XFontStyleEx.Bold);
+        public static FamiliaFonte SansSerifRegular() => new FamiliaFonte(NomeSansSerif, XFontStyleEx.Regular);
     }
 
     /// <summary>
