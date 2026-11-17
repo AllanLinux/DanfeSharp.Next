@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+<infNFSe Id="NFS33045572244555666000181000000000400426104623121433">
+<xLocEmi>Rio de Janeiro</xLocEmi>
+<xLocPrestacao>São Paulo</xLocPrestacao>
+<nNFSe>4004</nNFSe>
+<cLocIncid>3550308</cLocIncid>
+<xLocIncid>São Paulo</xLocIncid>
+<xTribNac>Execução, por administração, empreitada ou subempreitada, de obras de construção civil, hidráulica ou elétrica e de outras obras semelhantes.</xTribNac>
+<verAplic>SefinNacional_1.6.0</verAplic>
+<ambGer>2</ambGer>
+<tpEmis>1</tpEmis>
+<procEmi>1</procEmi>
+<cStat>100</cStat>
+<dhProc>2026-10-01T10:20:44-03:00</dhProc>
+<nDFSe>90000004</nDFSe>
+<emit>
+<CNPJ>44555666000181</CNPJ>
+<IM>1122334</IM>
+<xNome>DELTA CONSTRUCOES TESTE LTDA</xNome>
+<enderNac>
+<xLgr>AVENIDA RIO BRANCO</xLgr>
+<nro>156</nro>
+<xBairro>CENTRO</xBairro>
+<cMun>3304557</cMun>
+<UF>RJ</UF>
+<CEP>20040003</CEP>
+</enderNac>
+<fone>2130004004</fone>
+<email>fiscal@deltaconstrteste.com.br</email>
+</emit>
+<valores>
+<vBC>80000.00</vBC>
+<pAliqAplic>5.00</pAliqAplic>
+<vISSQN>4000.00</vISSQN>
+<vTotalRet>13580.00</vTotalRet>
+<vLiq>106420.00</vLiq>
+</valores>
+<IBSCBS>
+<cLocalidadeIncid>3550308</cLocalidadeIncid>
+<xLocalidadeIncid>São Paulo</xLocalidadeIncid>
+<valores>
+<vBC>111620.00</vBC>
+<vCalcReeRepRes>0.00</vCalcReeRepRes>
+<uf><pIBSUF>0.10</pIBSUF><pAliqEfetUF>0.10</pAliqEfetUF></uf>
+<mun><pIBSMun>0.00</pIBSMun><pAliqEfetMun>0.00</pAliqEfetMun></mun>
+<fed><pCBS>0.90</pCBS><pAliqEfetCBS>0.90</pAliqEfetCBS></fed>
+</valores>
+<totCIBS>
+<vTotNF>106420.00</vTotNF>
+<gIBS>
+<vIBSTot>111.62</vIBSTot>
+<gIBSUFTot><vIBSUF>111.62</vIBSUF></gIBSUFTot>
+<gIBSMunTot><vIBSMun>0.00</vIBSMun></gIBSMunTot>
+</gIBS>
+<gCBS><vCBS>1004.58</vCBS></gCBS>
+</totCIBS>
+</IBSCBS>
+<DPS versao="1.01">
+<infDPS Id="DPS330455724455566600018100001000000000004004">
+<tpAmb>2</tpAmb>
+<dhEmi>2026-10-01T10:20:00-03:00</dhEmi>
+<verAplic>TESTE_PDP_1.0</verAplic>
+<serie>1</serie>
+<nDPS>4004</nDPS>
+<dCompet>2026-09-30</dCompet>
+<tpEmit>1</tpEmit>
+<cLocEmi>3304557</cLocEmi>
+<prest>
+<CNPJ>44555666000181</CNPJ>
+<IM>1122334</IM>
+<fone>2130004004</fone>
+<email>fiscal@deltaconstrteste.com.br</email>
+<regTrib>
+<opSimpNac>1</opSimpNac>
+<regEspTrib>0</regEspTrib>
+</regTrib>
+</prest>
+<toma>
+<CNPJ>02558157000162</CNPJ>
+<IM>28714490</IM>
+<xNome>TELEFONICA BRASIL S.A.</xNome>
+<end><endNac><cMun>3550308</cMun><CEP>04571936</CEP></endNac><xLgr>AV ENGENHEIRO LUIZ CARLOS BERRINI</xLgr><nro>1376</nro><xBairro>CIDADE MONCOES</xBairro></end>
+</toma>
+<serv>
+<locPrest><cLocPrestacao>3550308</cLocPrestacao></locPrest>
+<cServ>
+<cTribNac>070201</cTribNac>
+<xDescServ>Execucao de obra civil - reforma de site de telecomunicacoes. Data de vencimento: 20/12/2026. Medicao 03.</xDescServ>
+</cServ>
+</serv>
+<valores>
+<vServPrest><vServ>120000.00</vServ></vServPrest>
+<vDedRed><vDR>40000.00</vDR></vDedRed>
+<trib>
+<tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>2</tpRetISSQN></tribMun>
+<tribFed>
+<piscofins><CST>01</CST><vBCPisCofins>120000.00</vBCPisCofins><pAliqPis>0.65</pAliqPis><pAliqCofins>3.00</pAliqCofins><vPis>780.00</vPis><vCofins>3600.00</vCofins><tpRetPisCofins>5</tpRetPisCofins></piscofins>
+<vRetCP>8800.00</vRetCP>
+<vRetCSLL>780.00</vRetCSLL>
+</tribFed>
+<totTrib><vTotTrib><vTotTribFed>5580.00</vTotTribFed><vTotTribEst>0.00</vTotTribEst><vTotTribMun>4000.00</vTotTribMun></vTotTrib></totTrib>
+</trib>
+</valores>
+<IBSCBS><finNFSe>0</finNFSe><indFinal>0</indFinal><cIndOp>100301</cIndOp><indDest>0</indDest><imovel><inscImobFisc>IMOB-123456</inscImobFisc><cCIB>12345678</cCIB></imovel><valores><trib><gIBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib></gIBSCBS></trib></valores></IBSCBS>
+</infDPS>
+</DPS>
+</infNFSe>
+</NFSe>

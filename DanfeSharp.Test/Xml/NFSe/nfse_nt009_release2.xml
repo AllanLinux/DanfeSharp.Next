@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+<infNFSe Id="NFS33045572244555666000181000000000400426104623121433">
+<xLocEmi>Rio de Janeiro</xLocEmi>
+<xLocPrestacao>São Paulo</xLocPrestacao>
+<nNFSe>4004</nNFSe>
+<cLocIncid>3550308</cLocIncid>
+<xLocIncid>São Paulo</xLocIncid>
+<xTribNac>Execução, por administração, empreitada ou subempreitada, de obras de construção civil, hidráulica ou elétrica e de outras obras semelhantes.</xTribNac>
+<verAplic>SefinNacional_1.6.0</verAplic>
+<ambGer>2</ambGer>
+<tpEmis>1</tpEmis>
+<procEmi>1</procEmi>
+<cStat>100</cStat>
+<dhProc>2026-10-01T10:20:44-03:00</dhProc>
+<nDFSe>90000004</nDFSe>
+<emit>
+<CNPJ>44555666000181</CNPJ>
+<IM>1122334</IM>
+<xNome>DELTA CONSTRUCOES TESTE LTDA</xNome>
+<enderNac>
+<xLgr>AVENIDA RIO BRANCO</xLgr>
+<nro>156</nro>
+<xBairro>CENTRO</xBairro>
+<cMun>3304557</cMun>
+<UF>RJ</UF>
+<CEP>20040003</CEP>
+</enderNac>
+<fone>2130004004</fone>
+<email>fiscal@deltaconstrteste.com.br</email>
+</emit>
+<valores>
+<vBC>80000.00</vBC>
+<pAliqAplic>5.00</pAliqAplic>
+<vISSQN>4000.00</vISSQN>
+<vTotalRet>13580.00</vTotalRet>
+<vLiq>106420.00</vLiq>
+</valores>
+<IBSCBS>
+<cLocalidadeIncid>3550308</cLocalidadeIncid>
+<xLocalidadeIncid>São Paulo</xLocalidadeIncid>
+<pRedutor>10.00</pRedutor><valores>
+<vBC>111620.00</vBC>
+<vCalcAjusteBCLocImoveis>1000.00</vCalcAjusteBCLocImoveis><vCalcAjusteBCIBSCBS>500.00</vCalcAjusteBCIBSCBS><uf><pIBSUF>0.10</pIBSUF><pRedAliqUF>60.00</pRedAliqUF><pAliqEfetUF>0.10</pAliqEfetUF></uf>
+<mun><pIBSMun>0.00</pIBSMun><pRedAliqMun>60.00</pRedAliqMun><pAliqEfetMun>0.00</pAliqEfetMun></mun>
+<fed><pCBS>0.90</pCBS><pRedAliqCBS>60.00</pRedAliqCBS><pAliqEfetCBS>0.90</pAliqEfetCBS></fed>
+</valores>
+<totCIBS>
+<vTotNF>106420.00</vTotNF>
+<gIBS>
+<vIBSTot>111.62</vIBSTot>
+<gIBSCredPres><pCredPresIBS>1.00</pCredPresIBS><vCredPresIBS>1116.20</vCredPresIBS></gIBSCredPres><gIBSUFTot><vDifUF>11.16</vDifUF><vIBSUF>111.62</vIBSUF></gIBSUFTot>
+<gIBSMunTot><vDifMun>0.00</vDifMun><vIBSMun>0.00</vIBSMun></gIBSMunTot>
+</gIBS>
+<gCBS><gCBSCredPres><pCredPresCBS>2.00</pCredPresCBS><vCredPresCBS>2232.40</vCredPresCBS></gCBSCredPres><vDifCBS>100.46</vDifCBS><vCBS>1004.58</vCBS></gCBS>
+<gTribRegular><pAliqEfeRegIBSUF>0.10</pAliqEfeRegIBSUF><vTribRegIBSUF>111.62</vTribRegIBSUF><pAliqEfeRegIBSMun>0.00</pAliqEfeRegIBSMun><vTribRegIBSMun>0.00</vTribRegIBSMun><pAliqEfeRegCBS>0.90</pAliqEfeRegCBS><vTribRegCBS>1004.58</vTribRegCBS></gTribRegular><gTribCompraGov><pIBSUF>0.09</pIBSUF><vIBSUF>100.46</vIBSUF><pIBSMun>0.00</pIBSMun><vIBSMun>0.00</vIBSMun><pCBS>0.81</pCBS><vCBS>904.12</vCBS></gTribCompraGov></totCIBS>
+</IBSCBS>
+<DPS versao="1.01">
+<infDPS Id="DPS330455724455566600018100001000000000004004">
+<tpAmb>2</tpAmb>
+<dhEmi>2026-10-01T10:20:00-03:00</dhEmi>
+<verAplic>TESTE_PDP_1.0</verAplic>
+<serie>1</serie>
+<nDPS>4004</nDPS>
+<dCompet>2026-09-30</dCompet>
+<tpEmit>1</tpEmit>
+<finNFSe>0</finNFSe><cLocEmi>3304557</cLocEmi>
+<prest>
+<CNPJ>44555666000181</CNPJ>
+<IM>1122334</IM>
+<fone>2130004004</fone>
+<email>fiscal@deltaconstrteste.com.br</email>
+<regTrib>
+<opSimpNac>1</opSimpNac>
+<regEspTrib>0</regEspTrib>
+</regTrib>
+</prest>
+<toma>
+<CNPJ>02558157000162</CNPJ>
+<IM>28714490</IM>
+<xNome>TELEFONICA BRASIL S.A.</xNome>
+<end><endNac><cMun>3550308</cMun><CEP>04571936</CEP></endNac><xLgr>AV ENGENHEIRO LUIZ CARLOS BERRINI</xLgr><nro>1376</nro><xBairro>CIDADE MONCOES</xBairro></end>
+</toma>
+<indDest>1</indDest><dest><CNPJ>11222333000181</CNPJ><xNome>DESTINATARIO TESTE NT009 LTDA</xNome><end><endNac><cMun>3304557</cMun><CEP>20040003</CEP></endNac><xLgr>RUA DO TESTE</xLgr><nro>10</nro><xBairro>CENTRO</xBairro></end><fone>2133334444</fone><email>dest@teste.com.br</email></dest><serv>
+<locPrest><cLocPrestacao>3550308</cLocPrestacao></locPrest>
+<cServ>
+<cTribNac>070201</cTribNac>
+<xDescServ>Execucao de obra civil - reforma de site de telecomunicacoes. Data de vencimento: 20/12/2026. Medicao 03.</xDescServ>
+</cServ>
+</serv>
+<valores>
+<vServPrest><vServ>120000.00</vServ></vServPrest>
+<vAjusteBC><vAjusteBCISSQN>40000.00</vAjusteBCISSQN></vAjusteBC><trib>
+<tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>2</tpRetISSQN></tribMun>
+<tribFed>
+<piscofins><CST>01</CST><vBCPisCofins>120000.00</vBCPisCofins><pAliqPis>0.65</pAliqPis><pAliqCofins>3.00</pAliqCofins><vPis>780.00</vPis><vCofins>3600.00</vCofins><tpRetPisCofins>5</tpRetPisCofins></piscofins>
+<vRetCP>8800.00</vRetCP>
+<vRetCSLL>780.00</vRetCSLL>
+</tribFed>
+<totTrib><vTotTrib><vTotTribFed>5580.00</vTotTribFed><vTotTribEst>0.00</vTotTribEst><vTotTribMun>4000.00</vTotTribMun></vTotTrib></totTrib>
+</trib>
+</valores>
+<IBSCBS><indFinal>0</indFinal><cIndOp>100301</cIndOp><tpOper>1</tpOper><tpEnteGov>2</tpEnteGov><imovel><cMun>3550308</cMun><gLocacao><pCopropriedade>100.00</pCopropriedade><vTotOper>120000.00</vTotOper><vDescIncondTot>0.00</vDescIncondTot><vDescCondTot>0.00</vDescCondTot><dVencOrig>2026-12-20</dVencOrig></gLocacao></imovel><valores><trib><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><cCredPres>01</cCredPres><gTribRegular><CSTReg>000</CSTReg><cClassTribReg>000001</cClassTribReg></gTribRegular><gDif><pDifUF>10.00</pDifUF><pDifMun>10.00</pDifMun><pDifCBS>10.00</pDifCBS></gDif></gIBSCBS></trib></valores></IBSCBS>
+</infDPS>
+</DPS>
+</infNFSe>
+</NFSe>

@@ -90,6 +90,12 @@ namespace DanfeSharp.NFSe
     public class ValoresNFSe
     {
         public double? vCalcDR { get; set; }
+
+        /// <summary>
+        /// Total dos ajustes da base de cálculo do ISSQN calculado pelo sistema. Substitui o vCalcDR (NT 009, item 2.3).
+        /// </summary>
+        public double? vCalcAjusteBCISSQN { get; set; }
+
         public string tpBM { get; set; }
         public double? vCalcBM { get; set; }
         public double? vBC { get; set; }
@@ -118,6 +124,17 @@ namespace DanfeSharp.NFSe
     {
         public double? vBC { get; set; }
         public double? vCalcReeRepRes { get; set; }
+
+        /// <summary>
+        /// Total dos ajustes da base do IBS/CBS em locação de imóveis. Substitui o vCalcDedRedIBSCBS (NT 009, item 2.3).
+        /// </summary>
+        public double? vCalcAjusteBCLocImoveis { get; set; }
+
+        /// <summary>
+        /// Total de reembolso, repasse ou ressarcimento fora da base do IBS/CBS. Substitui o vCalcReeRepRes (NT 009, item 2.3).
+        /// </summary>
+        public double? vCalcAjusteBCIBSCBS { get; set; }
+
         public AliquotasIbsUf uf { get; set; }
         public AliquotasIbsMun mun { get; set; }
         public AliquotasCbs fed { get; set; }
@@ -228,10 +245,23 @@ namespace DanfeSharp.NFSe
         public string dCompet { get; set; }
 
         public int tpEmit { get; set; }
+
+        /// <summary>
+        /// Finalidade da NFS-e. Na NT 009 (item 2.2) saiu do grupo IBSCBS e veio para a raiz do infDPS.
+        /// </summary>
+        public string finNFSe { get; set; }
+
         public string cLocEmi { get; set; }
         public SubstituicaoDps subst { get; set; }
         public PrestadorDps prest { get; set; }
         public PessoaDps toma { get; set; }
+
+        /// <summary>
+        /// Indicador e grupo do destinatário. Na NT 009 (item 2.11) saem do grupo IBSCBS e vêm para a raiz do infDPS, após o tomador.
+        /// </summary>
+        public string indDest { get; set; }
+        public PessoaDps dest { get; set; }
+
         public PessoaDps interm { get; set; }
         public ServicoDps serv { get; set; }
         public ValoresDps valores { get; set; }
@@ -383,7 +413,21 @@ namespace DanfeSharp.NFSe
         public ValorServicoDps vServPrest { get; set; }
         public DescontosDps vDescCondIncond { get; set; }
         public DeducoesReducoesDps vDedRed { get; set; }
+
+        /// <summary>
+        /// Ajustes da base de cálculo do ISSQN. Substitui o vDedRed e o gReeRepRes (NT 009, item 2.3).
+        /// </summary>
+        public AjusteBaseCalculoDps vAjusteBC { get; set; }
+
         public TributacaoDps trib { get; set; }
+    }
+
+    [Serializable]
+    [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
+    public class AjusteBaseCalculoDps
+    {
+        public double? pAjusteBCISSQN { get; set; }
+        public double? vAjusteBCISSQN { get; set; }
     }
 
     [Serializable]
@@ -522,6 +566,11 @@ namespace DanfeSharp.NFSe
     [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
     public class ImovelDps
     {
+        /// <summary>
+        /// Inscrição imobiliária no leiaute anterior à NT 009, direto no grupo imovel.
+        /// </summary>
+        public string inscImobFisc { get; set; }
+
         [XmlElement("gUnidImob")]
         public List<UnidadeImobiliariaDps> gUnidImob { get; set; }
     }
@@ -544,6 +593,12 @@ namespace DanfeSharp.NFSe
     [XmlType(AnonymousType = true, Namespace = Namespaces.NFSe)]
     public class TributacaoIbsCbsDps
     {
+        /// <summary>
+        /// CST e cClassTrib do IBS/CBS. Na NT 009 (item 2.16) saíram do gIBSCBS e vêm antes dele, direto no trib.
+        /// </summary>
+        public string CST { get; set; }
+        public string cClassTrib { get; set; }
+
         public ClassificacaoIbsCbsDps gIBSCBS { get; set; }
     }
 

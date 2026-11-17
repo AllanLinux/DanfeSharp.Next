@@ -64,6 +64,9 @@ namespace DanfeSharp.NFSe
             var chave = inf.Id != null && inf.Id.StartsWith("NFS") ? inf.Id.Substring(3) : inf.Id;
             var ibsCbsDps = dps.IBSCBS;
 
+            // NT 009 (itens 2.2 e 2.11): finNFSe e dest na raiz do infDPS; no leiaute anterior, dentro do grupo IBSCBS.
+            var finalidade = dps.finNFSe ?? ibsCbsDps?.finNFSe;
+
             var m = new DanfseViewModel
             {
                 ChaveAcesso = chave,
@@ -75,7 +78,7 @@ namespace DanfeSharp.NFSe
                 DataHoraEmissaoDps = dps.dhEmi?.DateTimeOffsetValue.DateTime,
                 Emitente = Descricao(dps.tpEmit.ToString(), TiposEmitente),
                 Situacao = Descricao(inf.cStat.ToString(), Situacoes),
-                Finalidade = ibsCbsDps?.finNFSe == null ? null : Descricao(ibsCbsDps.finNFSe, Finalidades),
+                Finalidade = finalidade == null ? null : Descricao(finalidade, Finalidades),
                 MunicipioEmissor = Juntar(" - ", inf.xLocEmi ?? Municipios.Nome(dps.cLocEmi), Municipios.Uf(dps.cLocEmi)),
                 AmbienteGerador = inf.ambGer,
                 TipoAmbiente = dps.tpAmb,
@@ -83,7 +86,7 @@ namespace DanfeSharp.NFSe
                 Prestador = Prestador(inf.emit, dps.prest),
                 Tomador = Pessoa(dps.toma),
                 Intermediario = Pessoa(dps.interm),
-                Destinatario = Pessoa(ibsCbsDps?.dest),
+                Destinatario = Pessoa(dps.dest ?? ibsCbsDps?.dest),
                 ExibirMunicipioEmissor = !(Vazio(dps.serv?.cServ?.cTribNac)?.StartsWith("99") ?? false),
             };
 
@@ -220,8 +223,9 @@ namespace DanfeSharp.NFSe
             m.CalculoBeneficioMunicipal = valores?.vCalcBM ?? mun?.BM?.vRedBCBM;
 
             // Total deduções/reduções: vDR ou vCalcDR, mais o valor de reembolso/repasse/ressarcimento (NT 008, item 2.4.5).
-            var deducoes = dps.valores?.vDedRed?.vDR ?? valores?.vCalcDR;
-            var reembolso = inf.IBSCBS?.valores?.vCalcReeRepRes;
+            // NT 009 (item 2.3): vDedRed vira vAjusteBC/vAjusteBCISSQN, vCalcDR vira vCalcAjusteBCISSQN e vCalcReeRepRes vira vCalcAjusteBCIBSCBS.
+            var deducoes = dps.valores?.vAjusteBC?.vAjusteBCISSQN ?? valores?.vCalcAjusteBCISSQN ?? dps.valores?.vDedRed?.vDR ?? valores?.vCalcDR;
+            var reembolso = ReembolsoRepasseRessarcimento(inf.IBSCBS);
             if (deducoes.HasValue || (reembolso ?? 0) > 0)
                 m.TotalDeducoesReducoes = Math.Round((deducoes ?? 0) + (reembolso ?? 0), 2);
 
@@ -258,8 +262,11 @@ namespace DanfeSharp.NFSe
 
         private static void PreencherIbsCbs(DanfseViewModel m, IbsCbsNFSe ib, IbsCbsDps ibDps)
         {
-            var g = ibDps?.valores?.trib?.gIBSCBS;
-            if (g != null) m.CstClassificacaoTributaria = $"{g.CST ?? "-"} / {g.cClassTrib ?? "-"}";
+            // NT 009 (item 2.16): CST e cClassTrib direto no trib; no leiaute anterior, dentro do gIBSCBS.
+            var tribIbsCbs = ibDps?.valores?.trib;
+            var cst = tribIbsCbs?.CST ?? tribIbsCbs?.gIBSCBS?.CST;
+            var cClassTrib = tribIbsCbs?.cClassTrib ?? tribIbsCbs?.gIBSCBS?.cClassTrib;
+            if (cst != null || cClassTrib != null) m.CstClassificacaoTributaria = $"{cst ?? "-"} / {cClassTrib ?? "-"}";
 
             if (ibDps != null || ib != null)
             {
@@ -313,10 +320,18 @@ namespace DanfeSharp.NFSe
             // Só o vCalcReeRepRes fica no grupo IBSCBS; os demais campos existem mesmo quando a nota não traz IBS/CBS,
             // então a soma é feita sempre. Sem nenhum dos campos, fica nulo e imprime "-" (NT 008, nota 12).
             var piscofins = valores?.trib?.tribFed?.piscofins;
-            m.ExclusoesReducoesBaseCalculo = Soma(m.DescontoIncondicionado, inf.IBSCBS?.valores?.vCalcReeRepRes, inf.valores?.vISSQN,
+            m.ExclusoesReducoesBaseCalculo = Soma(m.DescontoIncondicionado, ReembolsoRepasseRessarcimento(inf.IBSCBS), inf.valores?.vISSQN,
                 piscofins?.vPis, piscofins?.vCofins);
             if (!m.ExclusoesReducoesBaseCalculo.HasValue && inf.IBSCBS != null)
                 m.ExclusoesReducoesBaseCalculo = 0;
+        }
+
+        /// <summary>
+        /// Reembolso, repasse ou ressarcimento fora da base do IBS/CBS: vCalcAjusteBCIBSCBS (NT 009, item 2.3) ou vCalcReeRepRes (leiaute anterior).
+        /// </summary>
+        private static double? ReembolsoRepasseRessarcimento(IbsCbsNFSe ib)
+        {
+            return ib?.valores?.vCalcAjusteBCIBSCBS ?? ib?.valores?.vCalcReeRepRes;
         }
 
         private static double? Soma(params double?[] valores)
@@ -346,7 +361,8 @@ namespace DanfeSharp.NFSe
             var serv = dps.serv;
             var compl = serv?.infoCompl;
             var imoveis = dps.IBSCBS?.imovel?.gUnidImob?.Select(u => Vazio(u.inscImobFisc)).Where(i => i != null);
-            var inscImob = Vazio(serv?.obra?.inscImobFisc) ?? (imoveis != null && imoveis.Any() ? String.Join(", ", imoveis) : null);
+            var inscImob = Vazio(serv?.obra?.inscImobFisc) ?? (imoveis != null && imoveis.Any() ? String.Join(", ", imoveis) : null)
+                ?? Vazio(dps.IBSCBS?.imovel?.inscImobFisc); // leiaute anterior à NT 009 (imovel/inscImobFisc)
             var itensPedido = compl?.gItemPed?.xItemPed?.Select(Vazio).Where(i => i != null).ToList();
 
             var partes = new List<String>();

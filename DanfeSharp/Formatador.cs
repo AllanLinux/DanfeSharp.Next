@@ -26,7 +26,8 @@ namespace DanfeSharp
         public const String FormatoNumeroNF = @"000\.000\.000";
 
         public const String CEP = @"^(\d{5})\-?(\d{3})$";
-        public const String CNPJ = @"^(\d{2})\.?(\d{3})\.?(\d{3})\/?(\d{4})\-?(\d{2})$";
+        // CNPJ numérico ou alfanumérico (12 primeiras posições com letras maiúsculas ou números, DV numérico; NT 009, item 2.1).
+        public const String CNPJ = @"^([0-9A-Z]{2})\.?([0-9A-Z]{3})\.?([0-9A-Z]{3})\/?([0-9A-Z]{4})\-?(\d{2})$";
         public const String CPF = @"^(\d{3})\.?(\d{3})\.?(\d{3})\-?(\d{2})$";
         public const String Telefone = @"^\(?(\d{2})\)?\s*(\d{4,5})\s*\-?\s*(\d{4})$";
 
